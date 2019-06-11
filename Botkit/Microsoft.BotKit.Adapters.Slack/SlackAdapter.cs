@@ -234,11 +234,11 @@ namespace Microsoft.BotKit.Adapters.Slack
 
                         if (message.Ephemeral != null)
                         {
-                            result = await slack.PostEphemeralMessageAsync(message.channel, message.text, message.user) as ChatPostEphemeralMessageResult;
+                            result = await slack.PostEphemeralMessageAsync(message.channel, message.text, message.user);
                         }
                         else
                         {
-                            result = await slack.PostMessageAsync(message.channel, message.text) as ChatPostMessageResult;
+                            result = await slack.PostMessageAsync(message.channel, message.text);
                         }
 
                         if (result.ok)
@@ -344,18 +344,6 @@ namespace Microsoft.BotKit.Adapters.Slack
                 StreamReader sr = new StreamReader(request.Body);
                 dynamic slackEvent = JsonConvert.DeserializeObject(sr.ReadToEnd());
 
-                MediaTypeFormatter[] formatters = new MediaTypeFormatter[]
-                {
-                    new JsonMediaTypeFormatter
-                    {
-                        SupportedMediaTypes =
-                        {
-                            new System.Net.Http.Headers.MediaTypeHeaderValue("application/json") { CharSet = "utf-8" },
-                            new System.Net.Http.Headers.MediaTypeHeaderValue("text/json") { CharSet = "utf-8" },
-                        },
-                    },
-                };
-
                 if ((slackEvent as dynamic).type == "url_verification")
                 {
                     response.StatusCode = 200;
@@ -414,7 +402,6 @@ namespace Microsoft.BotKit.Adapters.Slack
                                 response.StatusCode = Convert.ToInt32(context.TurnState.Get<string>("httpStatus"));
                                 if (context.TurnState.Get<object>("httpBody") != null)
                                 {
-                                    response.StatusCode = 200;
                                     response.ContentType = "text/plain";
                                     string text = context.TurnState.Get<string>("httpBody");
                                     await response.WriteAsync(text);
@@ -487,7 +474,6 @@ namespace Microsoft.BotKit.Adapters.Slack
                                 response.StatusCode = Convert.ToInt32(context.TurnState.Get<string>("httpStatus"));
                                 if (context.TurnState.Get<object>("httpBody") != null)
                                 {
-                                    response.StatusCode = 200;
                                     response.ContentType = "text/plain";
                                     string text = context.TurnState.Get<object>("httpBody").ToString();
                                     await response.WriteAsync(text);
@@ -545,17 +531,14 @@ namespace Microsoft.BotKit.Adapters.Slack
 
                                 // send http response back
                                 response.StatusCode = Convert.ToInt32(context.TurnState.Get<string>("httpStatus"));
+                                response.ContentType = "text/plain";
                                 if (context.TurnState.Get<object>("httpBody") != null)
                                 {
-                                    response.StatusCode = 200;
-                                    response.ContentType = "text/plain";
                                     string text = context.TurnState.Get<object>("httpBody").ToString();
                                     await response.WriteAsync(text);
                                 }
                                 else
                                 {
-                                    response.StatusCode = 200;
-                                    response.ContentType = "text/plain";
                                     string text = string.Empty;
                                     await response.WriteAsync(text);
                                 }
