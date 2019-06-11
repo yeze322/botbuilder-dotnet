@@ -27,7 +27,7 @@ namespace Microsoft.BotKit.Adapters.Slack
     {
         private readonly ISlackAdapterOptions options;
         private readonly SlackTaskClient Slack;
-        private readonly string Identity;
+        private string Identity;
         private readonly string SlackOAuthURL = "https://slack.com/oauth/authorize?client_id=";
         public Dictionary<string, Ware> Middlewares;
         public readonly string NAME = "Slack Adapter";
@@ -57,19 +57,8 @@ namespace Microsoft.BotKit.Adapters.Slack
                 throw new Exception(warning + Environment.NewLine + "Required: include a verificationToken or clientSigningSecret to verify incoming Events API webhooks");
             }
 
-            if (this.options.BotToken != null)
-            {
-                Slack = new SlackTaskClient(this.options.BotToken);
-                Identity = Slack.MySelf?.id;
-            }
-            else
-            {
-                if (string.IsNullOrEmpty(options.ClientId) || string.IsNullOrEmpty(options.ClientSecret) ||
-                 string.IsNullOrEmpty(options.RedirectUri) || options.Scopes.Length > 0)
-                {
-                    throw new Exception("Missing Slack API credentials! Provide clientId, clientSecret, scopes and redirectUri as part of the SlackAdapter options.");
-                }
-            }
+            Slack = new SlackTaskClient(this.options.BotToken);
+            LoginWithSlack();
 
             Ware ware = new Ware();
             ware.Name = "spawn";
@@ -94,6 +83,23 @@ namespace Microsoft.BotKit.Adapters.Slack
 
             Middlewares = new Dictionary<string, Ware>();
             Middlewares.Add(ware.Name, ware);
+        }
+
+        private async Task LoginWithSlack()
+        {
+            if (this.options.BotToken != null)
+            {
+                AuthTestResponse response = await Slack.TestAuthAsync();
+                Identity = response.user_id;
+            }
+            else
+            {
+                if (string.IsNullOrEmpty(options.ClientId) || string.IsNullOrEmpty(options.ClientSecret) ||
+                 string.IsNullOrEmpty(options.RedirectUri) || options.Scopes.Length > 0)
+                {
+                    throw new Exception("Missing Slack API credentials! Provide clientId, clientSecret, scopes and redirectUri as part of the SlackAdapter options.");
+                }
+            }
         }
 
         /// <summary>
