@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Net;
 using System.Text;
 using SlackAPI;
 using System.IO;
@@ -203,12 +202,18 @@ namespace Microsoft.BotKit.Adapters.Slack
             }
 
             message.channel = activity.Conversation.Id;
-            //message.thread_ts = JsonConvert.DeserializeObject<DateTime>(activity.Conversation.Properties["thread_ts"].ToString());
+            message.ThreadTS = JsonConvert.DeserializeObject<DateTime>(activity.Conversation.Properties["thread_ts"].ToString());
 
             // if channelData is specified, overwrite any fields in message object
             if (activity.ChannelData != null)
             {
                 //message = activity.ChannelData;
+                message.Ephemeral = (activity as dynamic).ephemeral;
+                message.AsUser = (activity as dynamic).as_user;
+                message.IconUrl = (activity as dynamic).icon_url;
+                message.icons.status_emoji = (activity as dynamic).icon_emoji;
+                message.ThreadTS = (activity as dynamic).thread_ts;
+                message.text = (activity as dynamic).text;
             }
 
             // should this message be sent as an ephemeral message
@@ -379,7 +384,7 @@ namespace Microsoft.BotKit.Adapters.Slack
                         {
                             Activity activity = new Activity()
                             {
-                                Timestamp = new DateTime(),
+                                Timestamp = default(DateTime),
                                 ChannelId = "slack",
                                 Conversation = new ConversationAccount()
                                 {
@@ -409,16 +414,20 @@ namespace Microsoft.BotKit.Adapters.Slack
                             {
                                 context.TurnState.Add("httpStatus", "200");
 
-                                await RunPipelineAsync(context, bot.OnTurnAsync, default(CancellationToken));
+                                try
+                                {
+                                    await RunPipelineAsync(context, bot.OnTurnAsync, default(CancellationToken));
+                                }
+                                catch (Exception ex)
+                                {
+                                    throw ex;
+                                }
 
                                 // send http response back
                                 response.StatusCode = Convert.ToInt32(context.TurnState.Get<string>("httpStatus"));
-                                if (context.TurnState.Get<object>("httpBody") != null)
-                                {
-                                    response.ContentType = "text/plain";
-                                    string text = context.TurnState.Get<string>("httpBody");
-                                    await response.WriteAsync(text);
-                                }
+                                response.ContentType = "text/plain";
+                                string text = (context.TurnState.Get<object>("httpBody") != null) ? context.TurnState.Get<object>("httpBody").ToString() : string.Empty;
+                                await response.WriteAsync(text);
                             }
                         }
                     }
@@ -438,7 +447,7 @@ namespace Microsoft.BotKit.Adapters.Slack
                             Activity activity = new Activity()
                             {
                                 Id = ((dynamic)slackEvent)["event"].ts,
-                                Timestamp = new DateTime(),
+                                Timestamp = default(DateTime),
                                 ChannelId = "slack",
                                 Conversation = new ConversationAccount()
                                 {
@@ -446,7 +455,7 @@ namespace Microsoft.BotKit.Adapters.Slack
                                 },
                                 From = new ChannelAccount()
                                 {
-                                    Id = (((dynamic)slackEvent)["event"].bot_id != null)? ((dynamic)slackEvent)["event"].bot_id : ((dynamic)slackEvent)["event"].user,
+                                    Id = (((dynamic)slackEvent)["event"].bot_id != null) ? ((dynamic)slackEvent)["event"].bot_id : ((dynamic)slackEvent)["event"].user,
                                 },
                                 Recipient = new ChannelAccount()
                                 {
@@ -481,16 +490,20 @@ namespace Microsoft.BotKit.Adapters.Slack
                             {
                                 context.TurnState.Add("httpStatus", "200");
 
-                                await RunPipelineAsync(context, bot.OnTurnAsync, default(CancellationToken));
+                                try
+                                {
+                                    await RunPipelineAsync(context, bot.OnTurnAsync, default(CancellationToken));
+                                }
+                                catch (Exception ex)
+                                {
+                                    throw ex;
+                                }
 
                                 // send http response back
                                 response.StatusCode = Convert.ToInt32(context.TurnState.Get<string>("httpStatus"));
-                                if (context.TurnState.Get<object>("httpBody") != null)
-                                {
-                                    response.ContentType = "text/plain";
-                                    string text = context.TurnState.Get<object>("httpBody").ToString();
-                                    await response.WriteAsync(text);
-                                }
+                                response.ContentType = "text/plain";
+                                string text = (context.TurnState.Get<object>("httpBody") != null) ? context.TurnState.Get<object>("httpBody").ToString() : string.Empty;
+                                await response.WriteAsync(text);
                             }
                         }
                     }
@@ -506,7 +519,7 @@ namespace Microsoft.BotKit.Adapters.Slack
                             Activity activity = new Activity()
                             {
                                 Id = slackEvent.TriggerId,
-                                Timestamp = new DateTime(),
+                                Timestamp = default(DateTime),
                                 ChannelId = "slack",
                                 Conversation = new ConversationAccount()
                                 {
@@ -540,21 +553,20 @@ namespace Microsoft.BotKit.Adapters.Slack
                             {
                                 context.TurnState.Add("httpStatus", "200");
 
-                                await RunPipelineAsync(context, bot.OnTurnAsync, default(CancellationToken));
+                                try
+                                {
+                                    await RunPipelineAsync(context, bot.OnTurnAsync, default(CancellationToken));
+                                }
+                                catch (Exception ex)
+                                {
+                                    throw ex;
+                                }
 
                                 // send http response back
                                 response.StatusCode = Convert.ToInt32(context.TurnState.Get<string>("httpStatus"));
                                 response.ContentType = "text/plain";
-                                if (context.TurnState.Get<object>("httpBody") != null)
-                                {
-                                    string text = context.TurnState.Get<object>("httpBody").ToString();
-                                    await response.WriteAsync(text);
-                                }
-                                else
-                                {
-                                    string text = string.Empty;
-                                    await response.WriteAsync(text);
-                                }
+                                string text = (context.TurnState.Get<object>("httpBody") != null) ? context.TurnState.Get<object>("httpBody").ToString() : string.Empty;
+                                await response.WriteAsync(text);
                             }
                         }
                     }
@@ -579,7 +591,7 @@ namespace Microsoft.BotKit.Adapters.Slack
 
                 object[] signature = { "v0", timestamp.ToString(), body.ToString() };
 
-                string baseString = String.Join(":", signature);
+                string baseString = string.Join(":", signature);
 
                 HMACSHA256 myHMAC = new HMACSHA256(Encoding.UTF8.GetBytes(options.ClientSigningSecret));
 
@@ -588,7 +600,7 @@ namespace Microsoft.BotKit.Adapters.Slack
                 var retrievedSignature = request.Headers["X-Slack-Signature"];
 
                 // Compare the hash of the computed signature with the retrieved signature with a secure hmac compare function
-                bool signatureIsValid = String.Equals(hash, retrievedSignature);
+                bool signatureIsValid = string.Equals(hash, retrievedSignature);
 
                 // replace direct compare with the hmac result
                 if (!signatureIsValid)
