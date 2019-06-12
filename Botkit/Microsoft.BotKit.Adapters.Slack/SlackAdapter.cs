@@ -1,43 +1,49 @@
 ﻿// Copyright(c) Microsoft Corporation.All rights reserved.
 // Licensed under the MIT License.
-
-using Microsoft.Rest.Serialization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Bot.Builder;
-using Microsoft.Bot.Builder.Integration.AspNet.Core;
-using Microsoft.Bot.Schema;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Dynamic;
-using System.Net.Http;
-using System.Net.Http.Formatting;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Net;
 using System.Text;
 using SlackAPI;
-using SlackAPI.WebSocketMessages;
 using System.IO;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Bot.Builder;
+using Microsoft.Bot.Builder.Integration.AspNet.Core;
+using Microsoft.Bot.Schema;
+using Newtonsoft.Json;
 
 namespace Microsoft.BotKit.Adapters.Slack
 {
     public class SlackAdapter : BotAdapter, IBotFrameworkHttpAdapter
     {
-        private readonly ISlackAdapterOptions options;
-        private readonly SlackTaskClient Slack;
-        private string Identity;
-        private readonly string SlackOAuthURL = "https://slack.com/oauth/authorize?client_id=";
-        public Dictionary<string, Ware> Middlewares;
+        /// <summary>
+        /// Name used by Botkit plugin loader.
+        /// </summary>
         public readonly string NAME = "Slack Adapter";
-        public SlackBotWorker botkitWorker; 
+
+        /// <summary>
+        /// Object containing one or more Botkit middlewares to bind automatically.
+        /// </summary>
+        public Dictionary<string, Ware> Middlewares;
+
+        /// <summary>
+        /// A customized BotWorker object that exposes additional utility methods.
+        /// </summary>
+        public SlackBotWorker BotkitWorker;
+        private readonly ISlackAdapterOptions options;
+        private readonly SlackTaskClient slack;
+        private string identity;
+        private readonly string slackOAuthURL = "https://slack.com/oauth/authorize?client_id=";
 
         /// <summary>
         /// Create a Slack adapter.
         /// </summary>
-        /// <param name="options">An object containing API credentials, a webhook verification token and other options</param>
-        public SlackAdapter(ISlackAdapterOptions options) : base()
+        /// <param name="options">An object containing API credentials, a webhook verification token and other options.</param>
+        public SlackAdapter(ISlackAdapterOptions options) 
+            : base()
         {
             this.options = options;
 
@@ -57,8 +63,8 @@ namespace Microsoft.BotKit.Adapters.Slack
                 throw new Exception(warning + Environment.NewLine + "Required: include a verificationToken or clientSigningSecret to verify incoming Events API webhooks");
             }
 
-            Slack = new SlackTaskClient(this.options.BotToken);
-            LoginWithSlack();
+            slack = new SlackTaskClient(this.options.BotToken);
+            LoginWithSlack().Wait();
 
             Ware ware = new Ware();
             ware.Name = "spawn";
@@ -89,8 +95,8 @@ namespace Microsoft.BotKit.Adapters.Slack
         {
             if (this.options.BotToken != null)
             {
-                AuthTestResponse response = await Slack.TestAuthAsync();
-                Identity = response.user_id;
+                AuthTestResponse response = await slack.TestAuthAsync();
+                identity = response.user_id;
             }
             else
             {
@@ -110,9 +116,9 @@ namespace Microsoft.BotKit.Adapters.Slack
         /// <returns></returns>
         public async Task<SlackTaskClient> GetAPIAsync(Activity activity)
         {
-            if (Slack != null)
+            if (slack != null)
             {
-                return Slack;
+                return slack;
             }
 
             if (activity.Conversation.Properties["team"] == null)
@@ -133,9 +139,9 @@ namespace Microsoft.BotKit.Adapters.Slack
         /// <returns></returns>
         public async Task<string> GetBotUserByTeamAsync(Activity activity)
         {
-            if (!string.IsNullOrEmpty(Identity))
+            if (!string.IsNullOrEmpty(identity))
             {
-                return Identity;
+                return identity;
             }
 
             if (activity.Conversation.Properties["team"] == null)
@@ -143,6 +149,7 @@ namespace Microsoft.BotKit.Adapters.Slack
                 return null;
             }
 
+            // multi-team mode
             var userID = await options.GetBotUserByTeam(activity.Conversation.Properties["team"].ToString());
             return !string.IsNullOrEmpty(userID) ? userID : throw new Exception("Missing credentials for team.");
         }
@@ -154,7 +161,7 @@ namespace Microsoft.BotKit.Adapters.Slack
         public string GetInstallLink()
         {
             return (!string.IsNullOrEmpty(options.ClientId) && options.Scopes.Length > 0)
-                ? SlackOAuthURL + options.ClientId + "&scope=" + string.Join(",", options.Scopes)
+                ? slackOAuthURL + options.ClientId + "&scope=" + string.Join(",", options.Scopes)
                 : throw new Exception("getInstallLink() cannot be called without clientId and scopes in adapter options.");
         }
 
@@ -194,7 +201,7 @@ namespace Microsoft.BotKit.Adapters.Slack
                 };
                 message.attachments.Add(newAttachment);
             }
-                
+
             message.channel = activity.Conversation.Id;
             //message.thread_ts = JsonConvert.DeserializeObject<DateTime>(activity.Conversation.Properties["thread_ts"].ToString());
 
@@ -221,7 +228,7 @@ namespace Microsoft.BotKit.Adapters.Slack
         /// <summary>
         /// Standard BotBuilder adapter method to send a message from the bot to the messaging API.
         /// </summary>
-        /// <param name="context">A TurnContext representing the current incoming message and environment.</param>
+        /// <param name="turnContext">A TurnContext representing the current incoming message and environment.</param>
         /// <param name="activities">An array of outgoing activities to be sent back to the messaging API.</param>
         public override async Task<ResourceResponse[]> SendActivitiesAsync(ITurnContext turnContext, Activity[] activities, CancellationToken cancellationToken)
         {
@@ -251,7 +258,7 @@ namespace Microsoft.BotKit.Adapters.Slack
                         {
                             ResourceResponse response = new ResourceResponse() //{ id = result.Id, activityId = result.Ts, conversation = new { Id = result.Channel } };
                             {
-                                Id = (result as dynamic).ts
+                                Id = (result as dynamic).ts,
                             };
                             responses.Add(response as ResourceResponse);
                         }
@@ -277,7 +284,7 @@ namespace Microsoft.BotKit.Adapters.Slack
         /// <summary>
         /// Standard BotBuilder adapter method to update a previous message with new content.
         /// </summary>
-        /// <param name="context">A TurnContext representing the current incoming message and environment.</param>
+        /// <param name="turnContext">A TurnContext representing the current incoming message and environment.</param>
         /// <param name="activity">The updated activity in the form `{id: <id of activity to update>, ...}`</param>
         public override async Task<ResourceResponse> UpdateActivityAsync(ITurnContext turnContext, Activity activity, CancellationToken cancellationToken)
         {
@@ -298,14 +305,14 @@ namespace Microsoft.BotKit.Adapters.Slack
 
             return new ResourceResponse()
             {
-                Id = activity.Id
+                Id = activity.Id,
             };
         }
 
         /// <summary>
         /// Standard BotBuilder adapter method to delete a previous message.
         /// </summary>
-        /// <param name="context">A TurnContext representing the current incoming message and environment.</param>
+        /// <param name="turnContext">A TurnContext representing the current incoming message and environment.</param>
         /// <param name="reference">An object in the form `{activityId: <id of message to delete>, conversation: { id: <id of slack channel>}}`</param>
         public override async Task DeleteActivityAsync(ITurnContext turnContext, ConversationReference reference, CancellationToken cancellationToken)
         {
@@ -376,18 +383,18 @@ namespace Microsoft.BotKit.Adapters.Slack
                                 ChannelId = "slack",
                                 Conversation = new ConversationAccount()
                                 {
-                                    Id = slackEvent.Channel.Id
+                                    Id = slackEvent.Channel.Id,
                                 },
                                 From = new ChannelAccount()
                                 {
-                                    Id = (slackEvent.BotId != null) ? slackEvent.BotId : slackEvent.User.Id
+                                    Id = (slackEvent.BotId != null) ? slackEvent.BotId : slackEvent.User.Id,
                                 },
                                 Recipient = new ChannelAccount()
                                 {
-                                    Id = null
+                                    Id = null,
                                 },
                                 ChannelData = slackEvent,
-                                Type = ActivityTypes.Event
+                                Type = ActivityTypes.Event,
                             };
 
                             // Extra fields that do not belong to activity
@@ -435,19 +442,19 @@ namespace Microsoft.BotKit.Adapters.Slack
                                 ChannelId = "slack",
                                 Conversation = new ConversationAccount()
                                 {
-                                    Id = (slackEvent as dynamic)["event"].channel //id
+                                    Id = (slackEvent as dynamic)["event"].channel, //id
                                 },
                                 From = new ChannelAccount()
                                 {
-                                    Id = (((dynamic)slackEvent)["event"].bot_id != null)? ((dynamic)slackEvent)["event"].bot_id : ((dynamic)slackEvent)["event"].user
+                                    Id = (((dynamic)slackEvent)["event"].bot_id != null)? ((dynamic)slackEvent)["event"].bot_id : ((dynamic)slackEvent)["event"].user,
                                 },
                                 Recipient = new ChannelAccount()
                                 {
-                                    Id = null
+                                    Id = null,
                                 },
                                 ChannelData = ((dynamic)slackEvent)["event"],
                                 Text = null,
-                                Type = ActivityTypes.Event
+                                Type = ActivityTypes.Event,
                             };
 
                             // Extra field that doesn't belong to activity
@@ -503,19 +510,19 @@ namespace Microsoft.BotKit.Adapters.Slack
                                 ChannelId = "slack",
                                 Conversation = new ConversationAccount()
                                 {
-                                    Id = slackEvent.ChannelId
+                                    Id = slackEvent.ChannelId,
                                 },
                                 From = new ChannelAccount()
                                 {
-                                    Id = slackEvent.UserId
+                                    Id = slackEvent.UserId,
                                 },
                                 Recipient = new ChannelAccount()
                                 {
-                                    Id = null
+                                    Id = null,
                                 },
                                 ChannelData = slackEvent,
                                 Text = slackEvent.text,
-                                Type = ActivityTypes.Event
+                                Type = ActivityTypes.Event,
                             };
 
                             activity.Recipient.Id = await GetBotUserByTeamAsync(activity);
