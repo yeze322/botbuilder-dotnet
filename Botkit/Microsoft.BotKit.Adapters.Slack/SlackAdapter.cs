@@ -178,7 +178,7 @@ namespace Microsoft.BotKit.Adapters.Slack
         /// </summary>
         /// <param name="activity">A BotBuilder Activity object.</param>
         /// <returns>A Slack message object with {text, attachments, channel, thread ts} as well as any fields found in activity.channelData</returns>
-        public object ActivityToSlack(Activity activity)
+        public NewSlackMessage ActivityToSlack(Activity activity)
         {
             NewSlackMessage message = new NewSlackMessage();
 
@@ -256,7 +256,7 @@ namespace Microsoft.BotKit.Adapters.Slack
                 Activity activity = activities[i];
                 if (activity.Type == ActivityTypes.Message)
                 {
-                    NewSlackMessage message = this.ActivityToSlack(activity) as NewSlackMessage;
+                    NewSlackMessage message = this.ActivityToSlack(activity);
 
                     try
                     {
@@ -308,7 +308,7 @@ namespace Microsoft.BotKit.Adapters.Slack
         {
             if (activity.Id != null && activity.Conversation != null)
             {
-                NewSlackMessage message = this.ActivityToSlack(activity) as NewSlackMessage;
+                NewSlackMessage message = this.ActivityToSlack(activity);
                 SlackTaskClient slack = await this.GetAPIAsync(activity);
                 var results = await slack.UpdateAsync(activity.Timestamp.ToString(), activity.ChannelId, message.text);
                 if (!results.ok)

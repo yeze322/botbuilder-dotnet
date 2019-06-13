@@ -205,13 +205,13 @@ namespace Microsoft.BotKit.Adapters.Slack
 
             var adapter = (SlackAdapter)this.Controller.Adapter;
 
-            activity = (Activity)adapter.ActivityToSlack(activity);
+            var slackMessage = adapter.ActivityToSlack(activity);
 
             var requestOptions = new
             {
                 uri = (source.IncomingMessage.ChannelData as dynamic).ResponseUrl, // TO-DO: replace 'as dynamic'
                 method = "POST",
-                json = activity,
+                json = slackMessage,
             };
 
             return await this.RequestUrl(requestOptions);
