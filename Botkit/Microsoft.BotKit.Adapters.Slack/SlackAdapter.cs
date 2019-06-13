@@ -34,14 +34,14 @@ namespace Microsoft.BotKit.Adapters.Slack
         public SlackBotWorker BotkitWorker;
         private readonly ISlackAdapterOptions options;
         private readonly SlackTaskClient slack;
-        private string identity;
         private readonly string slackOAuthURL = "https://slack.com/oauth/authorize?client_id=";
-
+        private string identity;
+        
         /// <summary>
         /// Create a Slack adapter.
         /// </summary>
         /// <param name="options">An object containing API credentials, a webhook verification token and other options.</param>
-        public SlackAdapter(ISlackAdapterOptions options) 
+        public SlackAdapter(ISlackAdapterOptions options)
             : base()
         {
             this.options = options;
@@ -68,23 +68,20 @@ namespace Microsoft.BotKit.Adapters.Slack
             Ware ware = new Ware();
             ware.Name = "spawn";
             ware.Middlewares = new List<Action<BotWorker, Action>>();
-            ware.Middlewares.Add
-                (
-                    async (Bot, Next) =>
-                    {
-                        try
-                        {
-                            // make the Slack API available to all bot instances.
-                            (Bot as dynamic).api = await GetAPIAsync(Bot.config.Activity);
-                        }
-                        catch (Exception ex)
-                        {
-                            throw ex;
-                        }
+            ware.Middlewares.Add(async (Bot, Next) =>
+                                {
+                                    try
+                                    {
+                                        // make the Slack API available to all bot instances.
+                                        (Bot as dynamic).api = await GetAPIAsync(Bot.config.Activity);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        throw ex;
+                                    }
 
-                        Next();
-                    }
-                );
+                                    Next();
+                                });
 
             Middlewares = new Dictionary<string, Ware>();
             Middlewares.Add(ware.Name, ware);
@@ -189,6 +186,7 @@ namespace Microsoft.BotKit.Adapters.Slack
             {
                 message.ts = activity.Timestamp.Value.DateTime;
             }
+
             message.text = activity.Text;
 
             foreach (Microsoft.Bot.Schema.Attachment att in activity.Attachments)
@@ -202,18 +200,33 @@ namespace Microsoft.BotKit.Adapters.Slack
             }
 
             message.channel = activity.Conversation.Id;
-            message.ThreadTS = JsonConvert.DeserializeObject<DateTime>(activity.Conversation.Properties["thread_ts"].ToString());
+
+            if (activity.Conversation.Properties["thread_ts"] != null)
+            {
+                object obj = JsonConvert.DeserializeObject<object>(activity.Conversation.Properties["thread_ts"].ToString());
+                message.ThreadTS = (obj != null) ? (DateTime)obj : default(DateTime);
+            }
 
             // if channelData is specified, overwrite any fields in message object
             if (activity.ChannelData != null)
             {
-                //message = activity.ChannelData;
-                message.Ephemeral = (activity as dynamic).ephemeral;
-                message.AsUser = (activity as dynamic).as_user;
-                message.IconUrl = (activity as dynamic).icon_url;
-                message.icons.status_emoji = (activity as dynamic).icon_emoji;
-                message.ThreadTS = (activity as dynamic).thread_ts;
-                message.text = (activity as dynamic).text;
+                try
+                {
+                    // Try a straight up cast
+                    message = activity.ChannelData as NewSlackMessage;
+                }
+                catch (InvalidCastException ex)
+                {
+                    foreach (var property in message.GetType().GetFields())
+                    {
+                        string name = property.Name;
+                        var value = ((activity as dynamic)[name] != null) ? (activity as dynamic)[name] : null;
+                        if (value != null)
+                        {
+                            message.GetType().GetField(name).SetValue(message, value);
+                        }
+                    }
+                }
             }
 
             // should this message be sent as an ephemeral message
@@ -261,26 +274,26 @@ namespace Microsoft.BotKit.Adapters.Slack
 
                         if (result.ok)
                         {
-                            ResourceResponse response = new ResourceResponse() //{ id = result.Id, activityId = result.Ts, conversation = new { Id = result.Channel } };
+                            ResourceResponse response = new ResourceResponse() //{ id = result.ts, activityId = result.ts, conversation = new { Id = result.Channel } };
                             {
                                 Id = (result as dynamic).ts,
                             };
                             responses.Add(response as ResourceResponse);
                         }
-                        else
+                        /*else
                         {
                             throw new Exception($"Error sending activity to API:{result}");
-                        }
+                        }*/
                     }
                     catch (Exception ex)
                     {
                         throw ex;
                     }
                 }
-                else
+                /*else
                 {
-                    throw new Exception("Unknown message type encountered in sendActivities:${activity.Type}");
-                }
+                     throw new Exception("Unknown message type encountered in sendActivities:${activity.Type}");
+                }*/
             }
 
             return responses.ToArray();
@@ -352,7 +365,7 @@ namespace Microsoft.BotKit.Adapters.Slack
         /// </summary>
         /// <param name="request">A request object from Restify or Express</param>
         /// <param name="response">A response object from Restify or Express</param>
-        /// <param name="logic">A bot logic function in the form `async(context) => { ... }`</param>
+        /// <param name="bot">A bot with logic function in the form `async(context) => { ... }`.</param>
         public async Task ProcessAsync(HttpRequest request, HttpResponse response, IBot bot, CancellationToken cancellationToken = default(CancellationToken))
         {
             try
@@ -443,7 +456,6 @@ namespace Microsoft.BotKit.Adapters.Slack
                         }
                         else
                         {
-
                             Activity activity = new Activity()
                             {
                                 Id = ((dynamic)slackEvent)["event"].ts,
@@ -451,7 +463,7 @@ namespace Microsoft.BotKit.Adapters.Slack
                                 ChannelId = "slack",
                                 Conversation = new ConversationAccount()
                                 {
-                                    Id = (slackEvent as dynamic)["event"].channel, //id
+                                    Id = (slackEvent as dynamic)["event"].channel,
                                 },
                                 From = new ChannelAccount()
                                 {
