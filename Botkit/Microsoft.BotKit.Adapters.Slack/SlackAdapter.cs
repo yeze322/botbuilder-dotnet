@@ -24,11 +24,6 @@ namespace Microsoft.BotKit.Adapters.Slack
         public readonly string NAME = "Slack Adapter";
 
         /// <summary>
-        /// Object containing one or more Botkit middlewares to bind automatically.
-        /// </summary>
-        public Dictionary<string, Ware> Middlewares;
-
-        /// <summary>
         /// A customized BotWorker object that exposes additional utility methods.
         /// </summary>
         public SlackBotWorker BotkitWorker;
@@ -64,27 +59,6 @@ namespace Microsoft.BotKit.Adapters.Slack
 
             this.slack = new SlackTaskClient(this.options.BotToken);
             this.LoginWithSlack().Wait();
-
-            Ware ware = new Ware();
-            ware.Name = "spawn";
-            ware.Middlewares = new List<Action<BotWorker, Action>>();
-            ware.Middlewares.Add(async (bot, next) =>
-                                {
-                                    try
-                                    {
-                                        // make the Slack API available to all bot instances.
-                                        (bot as dynamic).api = await this.GetAPIAsync(bot.config.Activity);
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        throw ex;
-                                    }
-
-                                    next();
-                                });
-
-            this.Middlewares = new Dictionary<string, Ware>();
-            this.Middlewares.Add(ware.Name, ware);
         }
 
         private async Task LoginWithSlack()
