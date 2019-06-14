@@ -13,6 +13,6 @@ namespace Microsoft.BotKit.Adapters.Slack
 
         public string IconEmoji { get; set; }
 
-        public DateTime ThreadTS { get; set; }
+        public string ThreadTS { get; set; }
     }
 }

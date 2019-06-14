@@ -175,10 +175,11 @@ namespace Microsoft.BotKit.Adapters.Slack
 
             message.channel = activity.Conversation.Id;
 
-            if (activity.Conversation.Properties["thread_ts"] != null)
+            if (activity.Conversation.Properties["thread_ts"].ToString() != string.Empty)
             {
-                object obj = JsonConvert.DeserializeObject<object>(activity.Conversation.Properties["thread_ts"].ToString());
-                message.ThreadTS = (obj != null) ? (DateTime)obj : default(DateTime);
+                //object obj = JsonConvert.DeserializeObject<object>(activity.Conversation.Properties["thread_ts"].ToString());
+                //message.ThreadTS = (obj != null) ? (DateTime)obj : default(DateTime);
+                message.ThreadTS = activity.Conversation.Properties["thread_ts"].ToString();
             }
 
             // if channelData is specified, overwrite any fields in message object
@@ -390,7 +391,7 @@ namespace Microsoft.BotKit.Adapters.Slack
                             };
 
                             // Extra fields that do not belong to activity
-                            activity.Conversation.Properties["thread_ts"] = slackEvent.ThreadTs;
+                            activity.Conversation.Properties["thread_ts"] = ((dynamic)slackEvent)["event"].thread_ts;
                             activity.Conversation.Properties["team"] = slackEvent.Team.Id;
 
                             // this complains because of extra fields in conversation
@@ -453,7 +454,7 @@ namespace Microsoft.BotKit.Adapters.Slack
                             };
 
                             // Extra field that doesn't belong to activity
-                            activity.Conversation.Properties["thread_ts"] = slackEvent.thread_ts;
+                            activity.Conversation.Properties["thread_ts"] = ((dynamic)slackEvent)["event"].thread_ts;
 
                             // this complains because of extra fields in conversation
                             activity.Recipient.Id = await this.GetBotUserByTeamAsync(activity);
