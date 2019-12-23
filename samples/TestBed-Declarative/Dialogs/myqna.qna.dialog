@@ -3,9 +3,18 @@
     "$kind": "Microsoft.CrossTrainedRecognizerSet",
     "recognizers": [
         {
-            "$kind": "Microsoft.LuisRecognizer",
-            "$id": "",
-            "applicationId": ""
+            "$kind": "Microsoft.QnAMakerRecognizer",
+            "id": "Root_QnA",
+            "hostname": "{settings.qna.hostname}",
+            "endpointKey": "{settings.qna.endpointkey}",
+            "knowledgeBaseId": "{settings.qna.kbId}"
+        },
+        {
+            "$kind": "Microsoft.LUISRecognizer",
+            "id": "Root_LUIS",
+            "endpointKey": "",
+            "applicationId": "",
+            "endpoint": "{settings.luis.endpoint}"
         }
     ]
 }

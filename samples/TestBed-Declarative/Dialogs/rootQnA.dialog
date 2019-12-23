@@ -1,8 +1,13 @@
 {
     "$schema": "../sdk.schema",
     "$kind": "Microsoft.AdaptiveDialog",
-    "recognizer": "myqna.qna",
-    "generator": "rootQnA.lg",
+    "recognizer":{
+        "$kind": "Microsoft.QnAMakerRecognizer",
+        "id": "Root_QnA",
+        "hostname": "{settings.qna.hostname}",
+        "endpointKey": "{settings.qna.endpointkey}",
+        "knowledgeBaseId": "{settings.qna.kbId}"
+    },
     "triggers": [
         {
             "$kind": "Microsoft.OnQnAMatch",

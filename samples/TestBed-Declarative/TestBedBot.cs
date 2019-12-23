@@ -50,7 +50,7 @@ namespace Microsoft.BotBuilderSamples
         {
             System.Diagnostics.Trace.TraceInformation("Loading resources...");
 
-            var resource = this.resourceExplorer.GetResource("root.dialog");
+            var resource = this.resourceExplorer.GetResource("rootQnA.dialog");
             _dialogManager = new DialogManager(DeclarativeTypeLoader.Load<AdaptiveDialog>(resource, resourceExplorer, DebugSupport.SourceMap));
 
             System.Diagnostics.Trace.TraceInformation("Done loading resources.");

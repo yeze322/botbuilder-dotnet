@@ -39,7 +39,7 @@ namespace Microsoft.BotBuilderSamples
                         {
                             new SendActivity()
                             {
-                                Activity = new ActivityTemplate("@{@answer}")
+                                Activity = new ActivityTemplate("Here's what I have from QnA Maker - @{@answer}")
                             }
                         }
                     },
@@ -59,14 +59,21 @@ namespace Microsoft.BotBuilderSamples
                             new SendActivity("Let's get your user profile. LUIS recognizer won!")
                         }
                     },
-                    new OnAmbigiousIntent()
+                    new OnChooseIntent()
                     {
+                        // This is nice so you can handle different ambiguous intents via different triggers
+                        Intents = new List<string>()
+                        {
+                            "QnAMatch",
+                            "Help"
+                        },
                         Actions = new List<Dialog>()
                         {
-                            new SendActivity("Ambiguous!"),
-                            new SendActivity("Top scoring intent: @{turn.recognized.intent} with score @{turn.recognized.Score}"),
-
-                            //new SendActivity("Top scoring answer: @{answer} with score @{turn.recognized.entities.$instance.answer[0]}")
+                            new SendActivity("Ambiguous! QnA and Help intent!"),
+                            new SendActivity("[@{turn.recognized.intents.chooseIntent.QnAMatch.intents.QnAMatch.score}] Answer from KB: @{turn.recognized.intents.chooseIntent.QnAMatch.entities.answer[0]}"),
+                            new SendActivity("[@{turn.recognized.intents.chooseIntent.Help.intents.Help.score}] LUIS intent: Help (there is no way to dynamically get this from recognizer result and needs to be hard coded)")
+                            
+                            //new SendActivity("@{renderDisambiguationChoices(turn.recognized.intents.ChooseIntent)}")
                         }
                     },
                     new OnUnknownIntent()
@@ -86,7 +93,7 @@ namespace Microsoft.BotBuilderSamples
             InitialDialogId = nameof(AdaptiveDialog);
         }
 
-        private static InputRecognizer GetLUISApp()
+        private static Recognizer GetLUISApp()
         {
             var luisapplication = new LuisApplication()
             {
@@ -126,7 +133,7 @@ namespace Microsoft.BotBuilderSamples
             };
         }
 
-        private static InputRecognizer QnARecognizer()
+        private static Recognizer QnARecognizer()
         {
             return new QnAMakerRecognizer()
             {
@@ -138,11 +145,11 @@ namespace Microsoft.BotBuilderSamples
             };
         }
 
-        private static InputRecognizer MultiRecognizer()
+        private static Recognizer MultiRecognizer()
         {
             return new CrossTrainedRecognizerSet()
             {
-                Recognizers = new List<InputRecognizer>()
+                Recognizers = new List<Recognizer>()
                 {
                     QnARecognizer(),
                     GetLUISApp()

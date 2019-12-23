@@ -34,3 +34,11 @@
 
 # CapitalizeFirstLetter(name) 
 - @{concat(toUpper(substring(name, 0, 1)), substring(name, 1))}
+
+
+# renderDisambiguationChoices (collection)
+- @{join(foreach(collection, item, renderChoiceAsListItem(item)), '\n- ')}
+
+# renderChoiceAsListItem (item)
+> - intent:@{item.intents[0]} with score: @{item.intents[0].score}
+- intent : @{item.intent}
