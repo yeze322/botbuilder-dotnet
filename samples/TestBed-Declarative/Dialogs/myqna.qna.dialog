@@ -1,0 +1,11 @@
+{
+    "$schema": "../sdk.schema",
+    "$kind": "Microsoft.CrossTrainedRecognizerSet",
+    "recognizers": [
+        {
+            "$kind": "Microsoft.LuisRecognizer",
+            "$id": "",
+            "applicationId": ""
+        }
+    ]
+}
