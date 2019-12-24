@@ -40,5 +40,10 @@
 - @{join(foreach(collection, item, renderChoiceAsListItem(item)), '\n- ')}
 
 # renderChoiceAsListItem (item)
-> - intent:@{item.intents[0]} with score: @{item.intents[0].score}
 - intent : @{item.intent}
+
+# ShowMultiTurnAnswer
+[Activity
+    Text = @{@answer}
+    SuggestedActions = @{foreach(turn.recognized.answers[0].context.prompts, x, x.displayText)}
+]

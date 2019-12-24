@@ -11,6 +11,7 @@ using Microsoft.Bot.Builder.Dialogs.Adaptive.QnA.Recognizers;
 using Microsoft.Bot.Builder.Dialogs.Adaptive.Recognizers;
 using Microsoft.Bot.Builder.Dialogs.Adaptive.Templates;
 using Microsoft.Bot.Builder.LanguageGeneration;
+using Microsoft.Bot.Expressions;
 
 namespace Microsoft.BotBuilderSamples
 {
@@ -39,8 +40,49 @@ namespace Microsoft.BotBuilderSamples
                         {
                             new SendActivity()
                             {
-                                Activity = new ActivityTemplate("Here's what I have from QnA Maker - @{@answer}")
+                                Activity = new ActivityTemplate("Here's what I have from QnA Maker - @{@answer}"),
                             }
+                        }
+                    },
+                    new OnQnAMatch()
+                    {
+                        Condition = "count(turn.recognized.answers[0].context.prompts) > 0",
+                        Actions = new List<Dialog>()
+                        {
+                            //new SendActivity()
+                            //{
+                            //    Activity = new ActivityTemplate("Here's what I have from QnA Maker (multi-turn) - @{@answer}")
+                            //},
+                            //new SendActivity("@{join(foreach(turn.recognized.answers[0].context.prompts, x, x.displayText), ', ')}"),
+                            new SetProperty()
+                            {
+                                Property = "dialog.qna.multiTurn.context",
+                                Value = "turn.recognized.answers[0].context.prompts"
+                            },
+                            new TextInput()
+                            {
+                                Prompt = new ActivityTemplate("@{ShowMultiTurnAnswer()}"),
+                                Property = "dialog.qna.multiTurn.response",
+                                AllowInterruptions = "false",
+                            },
+                            new SendActivity("@{dialog.qna.multiTurn.response}"),
+                            new SendActivity("@{dialog.qna.multiTurn.context}"),
+                            new SendActivity("@{where(dialog.qna.multiTurn.context, item, item.value=='redmond')}"),
+                            
+                            //new SendActivity("@{where(dialog.qna.multiTurn.context, item, item.value==dialog.qna.multiTurn.response)}"),
+                            
+                            //new IfCondition()
+                            //{
+                            //    Condition = "count(where(dialog.qna.multiTurn.respones, x, x.value == dialog.qna.multiTurn.response)) > 0",
+                            //    Actions = new List<Dialog>()
+                            //    {
+                            //        new SendActivity("Multi-turn match")
+                            //    },
+                            //    ElseActions = new List<Dialog>()
+                            //    {
+
+                            //    }
+                            //}
                         }
                     },
                     new OnIntent()
