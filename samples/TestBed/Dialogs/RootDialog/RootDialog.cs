@@ -7,6 +7,7 @@ using Microsoft.Bot.Builder.Dialogs.Adaptive.Actions;
 using Microsoft.Bot.Builder.Dialogs.Adaptive.Conditions;
 using Microsoft.Bot.Builder.Dialogs.Adaptive.Generators;
 using Microsoft.Bot.Builder.Dialogs.Adaptive.Input;
+using Microsoft.Bot.Builder.Dialogs.Adaptive.QnA;
 using Microsoft.Bot.Builder.Dialogs.Adaptive.QnA.Recognizers;
 using Microsoft.Bot.Builder.Dialogs.Adaptive.Recognizers;
 using Microsoft.Bot.Builder.Dialogs.Adaptive.Templates;
@@ -49,11 +50,6 @@ namespace Microsoft.BotBuilderSamples
                         Condition = "count(turn.recognized.answers[0].context.prompts) > 0",
                         Actions = new List<Dialog>()
                         {
-                            //new SendActivity()
-                            //{
-                            //    Activity = new ActivityTemplate("Here's what I have from QnA Maker (multi-turn) - @{@answer}")
-                            //},
-                            //new SendActivity("@{join(foreach(turn.recognized.answers[0].context.prompts, x, x.displayText), ', ')}"),
                             new SetProperty()
                             {
                                 Property = "dialog.qna.multiTurn.context",
@@ -62,27 +58,32 @@ namespace Microsoft.BotBuilderSamples
                             new TextInput()
                             {
                                 Prompt = new ActivityTemplate("@{ShowMultiTurnAnswer()}"),
-                                Property = "dialog.qna.multiTurn.response",
+                                Property = "turn.qnaMultiTurnResponse",
                                 AllowInterruptions = "false",
                             },
-                            new SendActivity("@{dialog.qna.multiTurn.response}"),
-                            new SendActivity("@{dialog.qna.multiTurn.context}"),
-                            new SendActivity("@{where(dialog.qna.multiTurn.context, item, item.value=='redmond')}"),
-                            
-                            //new SendActivity("@{where(dialog.qna.multiTurn.context, item, item.value==dialog.qna.multiTurn.response)}"),
-                            
-                            //new IfCondition()
-                            //{
-                            //    Condition = "count(where(dialog.qna.multiTurn.respones, x, x.value == dialog.qna.multiTurn.response)) > 0",
-                            //    Actions = new List<Dialog>()
-                            //    {
-                            //        new SendActivity("Multi-turn match")
-                            //    },
-                            //    ElseActions = new List<Dialog>()
-                            //    {
-
-                            //    }
-                            //}
+                            new SetProperty()
+                            {
+                                Property = "turn.qnaMatchFromContext",
+                                Value = "where(dialog.qna.multiTurn.context, item, item.displayText == turn.qnaMultiTurnResponse)"
+                            },
+                            new IfCondition()
+                            {
+                                Condition = "turn.qnaMatchFromContext && count(turn.qnaMatchFromContext) > 0",
+                                Actions = new List<Dialog>()
+                                {
+                                    new SetProperty()
+                                    {
+                                        Property = "turn.qnaId",
+                                        Value = "turn.qnaMatchFromContext[0].qnaId"
+                                    }
+                                }
+                            },
+                            new EmitEvent()
+                            {
+                                EventName = AdaptiveEvents.ActivityReceived,
+                                EventValue = "turn.activity",
+                                BubbleEvent = true
+                            }
                         }
                     },
                     new OnIntent()
