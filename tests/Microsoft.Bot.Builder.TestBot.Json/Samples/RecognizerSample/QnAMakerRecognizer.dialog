@@ -1,0 +1,30 @@
+{
+  "$kind": "Microsoft.AdaptiveDialog",
+  "recognizer": {
+    "$kind": "Microsoft.QnAMakerRecognizer",
+    "KnowledgeBaseId": "'94b33450-f395-4636-973f-14621ef40691'",
+    "hostname": "'https://hualxielearn2-qnahost.azurewebsites.net/qnamaker'",
+    "endpointKey": "'40573b06-16df-4977-9675-134fbb3c3fe4'"
+  },
+  "triggers": [
+    {
+      "$kind": "Microsoft.OnBeginDialog",
+      "actions": [
+        {
+          "$kind": "Microsoft.TextInput",
+          "prompt": "Let's try QnAMakerRecognizer, please type a question like: where is the gym"
+        }
+      ]
+    },
+    {
+      "$kind": "Microsoft.OnQnAMatch",
+      "actions": [
+        {
+          "$kind": "Microsoft.SendActivity",
+          "activity": "Triggered OnQnAMatch, The answer is @{turn.recognized.answers[0].answer}"
+        }
+      ]
+    }
+  ],
+  "defaultResultProperty": "dialog.result"
+}

@@ -1,0 +1,103 @@
+{
+  "$kind": "Microsoft.AdaptiveDialog",
+  "recognizer": {
+    "$kind": "Microsoft.CrossTrainedRecognizerSet",
+    "recognizers": [
+      {
+        "$kind": "Microsoft.RegexRecognizer",
+        "id": "x",
+        "intents": [
+          {
+            "intent": "DeferToRecognizer_y",
+            "pattern": "test"
+          },
+          {
+            "intent": "x",
+            "pattern": "x"
+          }
+        ]
+      },
+      {
+        "$kind": "Microsoft.RegexRecognizer",
+        "id": "y",
+        "intents": [
+          {
+            "intent": "testy",
+            "pattern": "test"
+          },
+          {
+            "intent": "y",
+            "pattern": "y"
+          }
+        ]
+      },
+      {
+        "$kind": "Microsoft.RegexRecognizer",
+        "id": "z",
+        "intents": [
+          {
+            "intent": "DeferToRecognizer_y",
+            "pattern": "test"
+          },
+          {
+            "intent": "z",
+            "pattern": "z"
+          }
+        ]
+      }
+    ]
+  },
+  "autoEndDialog": false,
+  "triggers": [
+    {
+      "$kind": "Microsoft.OnBeginDialog",
+      "actions": [
+        {
+          "$kind": "Microsoft.TextInput",
+          "prompt": "Welcome to try CrossTrainedRecognizerSet, If there is consensus among the cross trained recognizers, the recognizerResult structure from the consensus recognizer is returned"
+        }
+      ]
+    },
+    {
+      "$kind": "Microsoft.OnIntent",
+      "intent": "testy",
+      "actions": [
+        {
+          "$kind": "Microsoft.SendActivity",
+          "activity": "Intent consensus, all point to testy"
+        }
+      ]
+    },
+    {
+      "$kind": "Microsoft.OnIntent",
+      "intent": "x",
+      "actions": [
+        {
+          "$kind": "Microsoft.SendActivity",
+          "activity": "Intent: x"
+        }
+      ]
+    },
+    {
+      "$kind": "Microsoft.OnIntent",
+      "intent": "y",
+      "actions": [
+        {
+          "$kind": "Microsoft.SendActivity",
+          "activity": "Intent: y"
+        }
+      ]
+    },
+    {
+      "$kind": "Microsoft.OnIntent",
+      "intent": "z",
+      "actions": [
+        {
+          "$kind": "Microsoft.SendActivity",
+          "activity": "Intent: z"
+        }
+      ]
+    }
+  ],
+  "defaultResultProperty": "dialog.result"
+}

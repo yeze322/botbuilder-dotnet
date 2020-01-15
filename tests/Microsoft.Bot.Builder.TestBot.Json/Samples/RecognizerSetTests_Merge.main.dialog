@@ -1,0 +1,69 @@
+ {
+        "$kind": "Microsoft.AdaptiveDialog",
+        "recognizer":          
+            {
+              "$kind": "Microsoft.RegexRecognizer",
+              "id": "z",
+              "intents": [
+                {
+                  "intent": "z",
+                  "pattern": "test"
+                },
+                {
+                  "intent": "z",
+                  "pattern": "z"
+                }
+              ]
+            },
+  "triggers": [
+    {
+      "$kind": "Microsoft.OnQnAMatch",
+      "actions": [
+        {
+          "$kind": "Microsoft.SendActivity",
+          "activity": "QnAMatch"
+        }
+      ]
+    },
+    {
+      "$kind": "Microsoft.OnIntent",
+      "intent": "x",
+      "actions": [
+        {
+          "$kind": "Microsoft.SendActivity",
+          "activity": "Intent:@{turn.recognized.intent}"
+        }
+      ]
+    },
+    {
+      "$kind": "Microsoft.OnIntent",
+      "intent": "y",
+      "actions": [
+        {
+          "$kind": "Microsoft.SendActivity",
+          "activity": "Intent:@{turn.recognized.intent}"
+        }
+      ]
+    },
+    {
+      "$kind": "Microsoft.OnIntent",
+      "intent": "z",
+      "actions": [
+        {
+          "$kind": "Microsoft.SendActivity",
+          "activity": "Intent:@{turn.recognized.intent}"
+        }
+      ]
+    },
+    {
+      "$kind": "Microsoft.OnUnknownIntent",
+      "actions": [
+        {
+          "$kind": "Microsoft.SendActivity",
+          "activity": "UnknownIntent:@{turn.recognized.intent}"
+        }
+      ]
+    }
+  ],
+        "defaultResultProperty": "dialog.result"
+    }

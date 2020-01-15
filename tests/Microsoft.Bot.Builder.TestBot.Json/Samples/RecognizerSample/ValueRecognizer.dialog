@@ -1,0 +1,29 @@
+{
+  "$kind": "Microsoft.AdaptiveDialog",
+  "recognizer": {
+    "$kind": "Microsoft.ValueRecognizer"
+  },
+  "autoEndDialog": false,
+  "triggers": [
+    {
+      "$kind": "Microsoft.OnBeginDialog",
+      "actions": [
+        {
+          "$kind": "Microsoft.SendActivity",
+          "activity": "@{AdaptiveCard()}"
+        }
+      ]
+    },
+    {
+      "$kind": "Microsoft.OnIntent",
+      "intent": "test",
+      "actions": [
+        {
+          "$kind": "Microsoft.SendActivity",
+          "activity": "Intent : @{turn.recognized.intent} and Entities: @{turn.recognized.entities}"
+        }
+      ]
+    }
+  ],
+  "defaultResultProperty": "dialog.result"
+}

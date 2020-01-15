@@ -1,0 +1,102 @@
+{
+  "$kind": "Microsoft.AdaptiveDialog",
+  "recognizer": {
+    "$kind": "Microsoft.CrossTrainedRecognizerSet",
+    "recognizers": [
+      {
+        "$kind": "Microsoft.RegexRecognizer",
+        "id": "x",
+        "intents": [
+          {
+            "intent": "DeferToRecognizer_y",
+            "pattern": "test"
+          },
+          {
+            "intent": "x",
+            "pattern": "x"
+          }
+        ]
+      },
+      {
+        "$kind": "Microsoft.RegexRecognizer",
+        "id": "y",
+        "intents": [
+          {
+            "intent": "DeferToRecognizer_z",
+            "pattern": "test"
+          },
+          {
+            "intent": "y",
+            "pattern": "y"
+          }
+        ]
+      },
+      {
+        "$kind": "Microsoft.RegexRecognizer",
+        "id": "z",
+        "intents": [
+          {
+            "intent": "DeferToRecognizer_x",
+            "pattern": "test"
+          },
+          {
+            "intent": "z",
+            "pattern": "z"
+          }
+        ]
+      }
+    ]
+  },
+  "autoEndDialog": false,
+  "triggers": [
+    {
+      "$kind": "Microsoft.OnBeginDialog",
+      "actions": [
+        {
+          "$kind": "Microsoft.TextInput",
+          "prompt": "Welcome to try CrossTrainedRecognizerSet, In the case that there is conflicting or ambigious signals from the recognizers then an intent of \"ChooseIntent\" will be returned with the results of all of the recognizers."
+        }
+      ]
+    },
+    {
+      "$kind": "Microsoft.OnChooseIntent",
+      "actions": [
+        {
+          "$kind": "Microsoft.SendActivity",
+          "activity": "Intent ambiguity, please choose one from the following, @{turn.recognized.intents}"
+        }
+      ]
+    },
+    {
+      "$kind": "Microsoft.OnIntent",
+      "intent": "x",
+      "actions": [
+        {
+          "$kind": "Microsoft.SendActivity",
+          "activity": "Intent: x"
+        }
+      ]
+    },
+    {
+      "$kind": "Microsoft.OnIntent",
+      "intent": "y",
+      "actions": [
+        {
+          "$kind": "Microsoft.SendActivity",
+          "activity": "Intent: y"
+        }
+      ]
+    },
+    {
+      "$kind": "Microsoft.OnIntent",
+      "intent": "z",
+      "actions": [
+        {
+          "$kind": "Microsoft.SendActivity",
+          "activity": "Intent: z"
+        }
+      ]
+    }
+  ],
+  "defaultResultProperty": "dialog.result"
+}

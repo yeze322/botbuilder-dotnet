@@ -1,0 +1,66 @@
+{
+  "$kind": "Microsoft.AdaptiveDialog",
+  "recognizer": {
+    "$kind": "Microsoft.MultiLanguageRecognizer",
+    "recognizers": {
+      "en-us": {
+        "$type": "Microsoft.RegexRecognizer",
+        "intents": [
+          {
+            "intent": "Test",
+            "pattern": "test"
+          },
+          {
+            "intent": "Help",
+            "pattern": "help"
+          }
+        ]
+      },
+      "zh-cn": {
+        "$type": "Microsoft.RegexRecognizer",
+        "intents": [
+          {
+            "intent": "Test",
+            "pattern": "测试"
+          },
+          {
+            "intent": "Help",
+            "pattern": "帮助"
+          }
+        ]
+      }
+    }
+  },
+  "triggers": [
+    {
+      "$kind": "Microsoft.OnBeginDialog",
+      "actions": [
+        {
+          "$kind": "Microsoft.TextInput",
+          "prompt": "Let's try MultiLanguageRecognizer, please type an intent test or help"
+        }
+      ]
+    },
+    {
+      "$kind": "Microsoft.OnIntent",
+      "intent": "Test",
+      "actions": [
+        {
+          "$kind": "Microsoft.SendActivity",
+          "activity": "Intent:@{turn.recognized.intent}"
+        }
+      ]
+    },
+    {
+      "$kind": "Microsoft.OnIntent",
+      "intent": "Help",
+      "actions": [
+        {
+          "$kind": "Microsoft.SendActivity",
+          "activity": "Intent:@{turn.recognized.intent}"
+        }
+      ]
+    }
+  ],
+  "defaultResultProperty": "dialog.result"
+}

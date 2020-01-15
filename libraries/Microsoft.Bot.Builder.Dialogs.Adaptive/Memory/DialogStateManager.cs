@@ -517,12 +517,12 @@ namespace Microsoft.Bot.Builder.Dialogs.Memory
                     if (value is object obj)
                     {
                         // For an object we need to see if any children path are being tracked
-                        void CheckChildren(string property, object value)
+                        void CheckChildren(string property, object v)
                         {
                             // Add new child segment
                             trackedPath += "_" + property.ToLower();
                             Update();
-                            if (value is object child)
+                            if (v is object child)
                             {
                                 ObjectPath.ForEachProperty(child, CheckChildren);
                             }

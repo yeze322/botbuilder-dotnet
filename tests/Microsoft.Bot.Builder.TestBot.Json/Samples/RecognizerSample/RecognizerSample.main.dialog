@@ -1,0 +1,179 @@
+{
+  "$type": "Microsoft.AdaptiveDialog",
+  "$designer": {
+    "id": "937757",
+    "description": "This is a bot that demonstrates the ability to send different Cards to users."
+  },
+  "autoEndDialog": false,
+  "defaultResultProperty": "dialog.result",
+  "triggers": [
+    {
+      "$type": "Microsoft.OnBeginDialog",
+      "actions": [
+        {
+          "$type": "Microsoft.ChoiceInput",
+          "$designer": {
+            "id": "359223"
+          },
+          "prompt": "Which sample would you like to try?",
+          "property": "user.choice",
+          "alwaysPrompt": true,
+          "allowInterruptions": "false",
+          "outputFormat": "value",
+          "choices": [
+            {
+              "value": "MultiLanguageRecognizer"
+            },
+            {
+              "value": "QnAMakerRecognizer"
+            },
+            {
+              "value": "ValueRecognizer"
+            },
+            {
+              "value": "RecognizerSet"
+            },
+            {
+              "value": "CrossTrainedRecognizerSet_Consensus"
+            },
+            {
+              "value": "CrossTrainedRecognizerSet_NotConsensus"
+            }
+          ],
+          "style": "List"
+        },
+        {
+          "$type": "Microsoft.SwitchCondition",
+          "$designer": {
+            "id": "304837"
+          },
+          "condition": "user.choice",
+          "cases": [
+            {
+              "value": "MultiLanguageRecognizer",
+              "actions": [
+                {
+                  "$type": "Microsoft.BeginDialog",
+                  "$designer": {
+                    "name": "Send an Activity",
+                    "id": "159442"
+                  },
+                  "dialog": "MultiLanguageRecognizer"
+                }
+              ]
+            },
+            {
+              "value": "QnAMakerRecognizer",
+              "actions": [
+                {
+                  "$type": "Microsoft.BeginDialog",
+                  "$designer": {
+                    "name": "Send an Activity",
+                    "id": "159442"
+                  },
+                  "dialog": "QnAMakerRecognizer"
+                }
+              ]
+            },
+            {
+              "value": "ValueRecognizer",
+              "actions": [
+                {
+                  "$type": "Microsoft.BeginDialog",
+                  "$designer": {
+                    "name": "Send an Activity",
+                    "id": "159442"
+                  },
+                  "dialog": "ValueRecognizer"
+                }
+              ]
+            },
+            {
+              "value": "RecognizerSet",
+              "actions": [
+                {
+                  "$type": "Microsoft.BeginDialog",
+                  "$designer": {
+                    "name": "Send an Activity",
+                    "id": "159442"
+                  },
+                  "dialog": "RecognizerSet"
+                }
+              ]
+            },
+            {
+              "value": "CrossTrainedRecognizerSet_Consensus",
+              "actions": [
+                {
+                  "$type": "Microsoft.BeginDialog",
+                  "$designer": {
+                    "name": "Send an Activity",
+                    "id": "159442"
+                  },
+                  "dialog": "CrossTrainedRecognizerSet_Consensus"
+                }
+              ]
+            },
+            {
+              "value": "CrossTrainedRecognizerSet_NotConsensus",
+              "actions": [
+                {
+                  "$type": "Microsoft.BeginDialog",
+                  "$designer": {
+                    "name": "Send an Activity",
+                    "id": "159442"
+                  },
+                  "dialog": "CrossTrainedRecognizerSet_NotConsensus"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "$type": "Microsoft.RepeatDialog",
+          "$designer": {
+            "id": "831626"
+          }
+        }
+      ],
+      "$designer": {
+        "id": "392502"
+      }
+    },
+    {
+      "$type": "Microsoft.OnConversationUpdateActivity",
+      "actions": [
+        {
+          "$type": "Microsoft.Foreach",
+          "$designer": {
+            "id": "518944",
+            "name": "Loop: for each item"
+          },
+          "itemsProperty": "turn.Activity.membersAdded",
+          "actions": [
+            {
+              "$type": "Microsoft.IfCondition",
+              "$designer": {
+                "id": "641773",
+                "name": "Branch: if/else"
+              },
+              "condition": "string(dialog.foreach.value.id) != string(turn.Activity.Recipient.id)",
+              "actions": [
+                {
+                  "$type": "Microsoft.SendActivity",
+                  "$designer": {
+                    "id": "729500",
+                    "name": "Send a response"
+                  },
+                  "activity": "@{bfdactivity-729500()}"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "generator": "common.lg",
+  "$schema": "https://raw.githubusercontent.com/microsoft/BotFramework-Composer/stable/Composer/packages/server/schemas/sdk.schema"
+}
