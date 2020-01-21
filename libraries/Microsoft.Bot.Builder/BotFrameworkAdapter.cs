@@ -13,6 +13,7 @@ using System.Security.Principal;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using AuthLib;
 using Microsoft.Bot.Builder.Integration;
 using Microsoft.Bot.Connector;
 using Microsoft.Bot.Connector.Authentication;
@@ -383,7 +384,7 @@ namespace Microsoft.Bot.Builder
             {
                 context.TurnState.Add<IIdentity>(BotIdentityKey, claimsIdentity);
                 context.TurnState.Add<BotCallbackHandler>(callback);
-                
+
                 var connectorClient = await CreateConnectorClientAsync(activity.ServiceUrl, claimsIdentity, cancellationToken).ConfigureAwait(false);
                 context.TurnState.Add(connectorClient);
 
@@ -489,7 +490,7 @@ namespace Microsoft.Bot.Builder
                         {
                             Logger.LogError("Failed to fetch token before processing outgoing activity. " + ex.Message);
                         }
-                        
+
                         response = await ProcessOutgoingActivityAsync(turnContext, activity, cancellationToken).ConfigureAwait(false);
                     }
                     else
@@ -963,7 +964,7 @@ namespace Microsoft.Bot.Builder
                 {
                     Id = Guid.NewGuid().ToString(),
                     ProviderId = null,
-                    Uri = "api://123-abc/.default",
+                    Uri = "api://96f8ab55-1fe6-47f7-adea-747c5ae290b0/.default",
                 },
             };
         }
@@ -973,14 +974,35 @@ namespace Microsoft.Bot.Builder
         /// </summary>
         /// <param name="turnContext">Context for the current turn of conversation with the user.</param>
         /// <param name="connectionName">Name of the auth connection to use.</param>
+        /// <param name="userId"> UserId for which token exchange is to be done. </param>
         /// <param name="exchangeRequest">The exchange request details, either a token to exchange or a uri to exchange.</param>
         /// <param name="cancellationToken">A cancellation token that can be used by other objects
         /// or threads to receive notice of cancellation.</param>
         /// <returns>If the task completes, the exchanged token is returned.</returns>
-        public virtual async Task<TokenResponse> ExchangeTokenAsync(ITurnContext turnContext, string connectionName, TokenExchangeRequest exchangeRequest, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<TokenResponse> ExchangeTokenAsync(ITurnContext turnContext, string connectionName, string userId, TokenExchangeRequest exchangeRequest, CancellationToken cancellationToken = default(CancellationToken))
         {
+
+            TokenResponse result = null;
             var client = await CreateOAuthApiClientAsync(turnContext).ConfigureAwait(false);
-            var result = (TokenResponse)await client.UserToken.ExchangeAsyncAsync(turnContext.Activity.From.Id, connectionName, turnContext.Activity.ChannelId, exchangeRequest, cancellationToken).ConfigureAwait(false);
+
+            if (!string.IsNullOrEmpty(exchangeRequest.Uri) && string.IsNullOrEmpty(exchangeRequest.Token))
+            {
+                // if no token to exchange is provided then simply call getusertoken with the appropriate scope.
+                // that should ideally be done in the service, but we are doing it here itself from the client for demo purposes
+                // if from VA then use to field instead of context.from.id
+                result = await client.UserToken.GetTokenAsync(userId, connectionName, turnContext.Activity.ChannelId, null, cancellationToken).ConfigureAwait(false);
+
+                if (result != null && result.Token != null)
+                {
+                    //return result;
+                    exchangeRequest.Token = result.Token;
+                    //exchangeRequest.Token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6InBpVmxsb1FEU01LeGgxbTJ5Z3FHU1ZkZ0ZwQSJ9.eyJhdWQiOiJlM2EyZDFhNy1jNjJlLTQwYzQtYWMxOC1iYWYxY2QxNTQ1MjUiLCJpc3MiOiJodHRwczovL2xvZ2luLm1pY3Jvc29mdG9ubGluZS5jb20vMTg1MDE5ZjMtMjIyMC00MTE5LWEzOWYtNDI5MDljMzI2MTgzL3YyLjAiLCJpYXQiOjE1Nzk1OTU4MDAsIm5iZiI6MTU3OTU5NTgwMCwiZXhwIjoxNTc5NTk5NzAwLCJhaW8iOiJBVFFBeS84T0FBQUFBYjlnZTU5Rm9RRkN5MUc4aStyMUNiSXBKRWxvWU5vT3JQMlVmdUpSRTllTHp4bXdwVXlaRm5tQ1YxdjEyRURlIiwiYXpwIjoiZTNhMmQxYTctYzYyZS00MGM0LWFjMTgtYmFmMWNkMTU0NTI1IiwiYXpwYWNyIjoiMCIsIm5hbWUiOiJzd2FnYXQgbWlzaHJhIiwib2lkIjoiYmMzMGNjYjMtNzRlYy00ZTg4LTk2YTQtMjEwYTk0MDIxNTI2IiwicHJlZmVycmVkX3VzZXJuYW1lIjoic3dhZ2F0MUBzd2FnYXRtaXNocmEub25taWNyb3NvZnQuY29tIiwic2NwIjoiY2xpZW50YWNjZXNzIiwic3ViIjoiNnA3QjJJNVZCbU1Id3AycGY0OWFIVzQzczBXTEQxT19PRHVUOG5XMGt3USIsInRpZCI6IjE4NTAxOWYzLTIyMjAtNDExOS1hMzlmLTQyOTA5YzMyNjE4MyIsInV0aSI6Ik9JTW5tYmRZOWthZEZNT0lEcXFEQUEiLCJ2ZXIiOiIyLjAifQ.lqn8dvORXFuoDBcJ2m7apof1eitKArPqMVo7ZbyHgjIqFGjE2_xkB74mYEuWJIhNGkx-xl7wmxkjWGpF7-mz_kXV12i9tG3ilk6RfztcELelOu6Td7m6VxPlquhtx7qKoc-EUQj9eMfsJUgx6yR3G1DGY8JKz9VMF8NK1kW6b3ucX9nto6YLxuhmb7BQnhKuBEXXRHp0L-PQJoJHKCSgE7CCDEEknKD7zlur_V8HecDHKuHAVbR8qsuuEnjK4d-2hA-VEGBM01MLnqvZf6CpI0ScLqaFOlS1zK17Ve0RPPaM_cnV4EJbfEvuQuM_FEHGq-VoXuRjsxof8kh5LKlM3w";
+                }
+            }
+
+            //result = (TokenResponse)await client.UserToken.ExchangeAsyncAsync(turnContext.Activity.From.Id, connectionName, turnContext.Activity.ChannelId, exchangeRequest, cancellationToken).ConfigureAwait(false);
+            var authLib = new AuthLib.AuthLib();
+            result = await authLib.ExchangeTokenAsync(userId, connectionName, turnContext.Activity.ChannelId, exchangeRequest, cancellationToken).ConfigureAwait(false);
 
             // TODO: this should work
             if (result.Token == null)
@@ -1309,7 +1331,7 @@ namespace Microsoft.Bot.Builder
                 // We create a default claim that contains only the desired audience.
                 var defaultConnectorClaims = new List<Claim> { new Claim(AuthenticationConstants.AudienceClaim, audience) };
                 var connectorClaimsIdentity = new ClaimsIdentity(defaultConnectorClaims);
-                
+
                 // The CreateConnectorClientAsync will create a ConnectorClient with an associated MicrosoftAppId for that claim and will
                 // initialize the dictionaries that contain the cache instances.
                 await CreateConnectorClientAsync(serviceUrl, connectorClaimsIdentity, cancellationToken).ConfigureAwait(false);
