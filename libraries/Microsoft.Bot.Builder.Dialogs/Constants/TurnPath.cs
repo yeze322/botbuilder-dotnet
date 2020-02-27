@@ -48,7 +48,7 @@
         public const string INTERRUPTED = "turn.interrupted";
 
         /// <summary>
-        /// The current dialog event (set during event processings).
+        /// The current dialog event (set during event processing.)
         /// </summary>
         public const string DIALOGEVENT = "turn.dialogEvent";
 
@@ -58,7 +58,7 @@
         public const string REPEATEDIDS = "turn.repeatedIds";
 
         /// <summary>
-        /// This is a bool which if set means that the turncontext.activity has been consumed by some component in the system.
+        /// This is a bool which if set means that the TurnContext.activity has been consumed by some component in the system.
         /// </summary>
         public const string ACTIVITYPROCESSED = "turn.activityProcessed";
 

@@ -96,8 +96,6 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive
 
             if (value == null)
             {
-                this.Value = default(T);
-                this.Expression = null;
                 return;
             }
 

@@ -18,7 +18,7 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive
         InsertActions,
 
         /// <summary>
-        /// Add the changeactions to the tail of the sequence.
+        /// Add the change actions to the tail of the sequence.
         /// </summary>
         AppendActions,
 

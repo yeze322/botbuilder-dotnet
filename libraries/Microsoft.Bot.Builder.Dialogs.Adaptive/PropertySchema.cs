@@ -99,7 +99,7 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive
         /// Gets a value indicating whether type is an array.
         /// </summary>
         /// <value>True if array.</value>
-        public bool IsArray => Schema?.Parent?.Parent["type"]?.Value<string>() == "array";
+        public bool IsArray => Path.EndsWith("[]");
 
         /// <summary>
         /// Gets a value indicating whether property is an enum.

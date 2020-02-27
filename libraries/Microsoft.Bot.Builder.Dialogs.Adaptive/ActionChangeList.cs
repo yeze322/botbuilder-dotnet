@@ -16,9 +16,6 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive
         [JsonProperty(PropertyName = "actions")]
         public List<ActionState> Actions { get; set; } = new List<ActionState>();
 
-        [JsonProperty(PropertyName = "tags")]
-        public List<string> Tags { get; set; } = new List<string>();
-
         /// <summary>
         /// Gets or sets turn state associated with the plan change list (it will be applied to turn state when plan is applied).
         /// </summary>

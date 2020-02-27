@@ -49,12 +49,6 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive
             RegisterSourceLocation(callerPath, callerLine);
         }
 
-        [JsonIgnore]
-        public IStatePropertyAccessor<BotState> BotState { get; set; }
-
-        [JsonIgnore]
-        public IStatePropertyAccessor<Dictionary<string, object>> UserState { get; set; }
-
         /// <summary>
         /// Gets or sets recognizer for processing incoming user input.
         /// </summary>
@@ -74,10 +68,10 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive
         public ILanguageGenerator Generator { get; set; }
 
         /// <summary>
-        /// Gets or sets trigger handlers to respond to conditions which modifying the executing plan. 
+        /// Gets or sets trigger handlers to respond to conditions which modify the executing plan. 
         /// </summary>
         /// <value>
-        /// Trigger handlers to respond to conditions which modifying the executing plan. 
+        /// Trigger handlers to respond to conditions which modify the executing plan. 
         /// </value>
         [JsonProperty("triggers")]
         public virtual List<OnCondition> Triggers { get; set; } = new List<OnCondition>();
@@ -86,7 +80,7 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive
         /// Gets or sets a value indicating whether to end the dialog when there are no actions to execute.
         /// </summary>
         /// <remarks>
-        /// If true, when there are no actions to execute, the current dialog will end
+        /// If true, when there are no actions to execute, the current dialog will end.
         /// If false, when there are no actions to execute, the current dialog will simply end the turn and still be active.
         /// </remarks>
         /// <value>
@@ -171,7 +165,6 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive
             {
                 if (!dcState.ContainsKey(ConditionTracker))
                 {
-                    var parser = Selector.Parser;
                     foreach (var trigger in Triggers)
                     {
                         if (trigger.RunOnce && trigger.Condition != null)
@@ -272,7 +265,7 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive
 
             if (state.Actions != null && state.Actions.Any())
             {
-                var ctx = new SequenceContext(this.Dialogs, dc, state.Actions.First(), state.Actions, changeTurnKey, this.Dialogs);
+                var ctx = new SequenceContext(this.Dialogs, dc, state.Actions.First(), state.Actions, changeTurnKey);
                 ctx.Parent = dc;
                 return ctx;
             }
@@ -780,7 +773,7 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive
                 state.Actions = new List<ActionState>();
             }
 
-            var sequenceContext = new SequenceContext(dc.Dialogs, dc, new DialogState { DialogStack = dc.Stack }, state.Actions, changeTurnKey, this.Dialogs);
+            var sequenceContext = new SequenceContext(dc.Dialogs, dc, new DialogState { DialogStack = dc.Stack }, state.Actions, changeTurnKey);
             sequenceContext.Parent = dc.Parent;
             return sequenceContext;
         }

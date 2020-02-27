@@ -11,21 +11,14 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive
 {
     public class SequenceContext : DialogContext
     {
-        private const string WaitForInput = "turn.waitForInput";
-
         private readonly string changeKey;
 
-        private DialogSet actionDialogs;
-
-        public SequenceContext(DialogSet dialogs, DialogContext dc, DialogState state, List<ActionState> actions, string changeKey, DialogSet actionDialogs)
+        public SequenceContext(DialogSet dialogs, DialogContext dc, DialogState state, List<ActionState> actions, string changeKey)
             : base(dialogs, dc, state)
         {
             this.Actions = actions;
             this.changeKey = changeKey;
-            this.actionDialogs = actionDialogs;
         }
-
-        public AdaptiveDialogState Plans { get; private set; }
 
         /// <summary>
         /// Gets or sets list of actions being executed.
@@ -177,9 +170,6 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive
             {
                 throw new ArgumentNullException(nameof(change));
             }
-
-            // Initialize sequence if needed
-            var newSequence = !this.Actions.Any();
 
             // Update sequence
             switch (change.ChangeType)
