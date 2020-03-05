@@ -972,29 +972,38 @@ namespace Microsoft.Bot.Builder
         /// <returns>If the task completes, the exchanged token is returned.</returns>
         public virtual async Task<TokenResponse> ExchangeTokenAsync(ITurnContext turnContext, string connectionName, string userId, TokenExchangeRequest exchangeRequest, CancellationToken cancellationToken = default(CancellationToken))
         {
+            BotAssert.ContextNotNull(turnContext);
+
+            if (string.IsNullOrWhiteSpace(connectionName))
+            {
+                throw new ArgumentNullException(nameof(connectionName));
+            }
+
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                throw new ArgumentNullException(nameof(userId));
+            }
+
+            if (exchangeRequest == null)
+            {
+                throw new ArgumentNullException(nameof(exchangeRequest));
+            }
+
+            if (string.IsNullOrWhiteSpace(exchangeRequest.Token) && string.IsNullOrWhiteSpace(exchangeRequest.Uri))
+            {
+                throw new ArgumentException(nameof(exchangeRequest), "Either a Token or Uri property is required on the TokenExchangeRequest");
+            }
+
             var client = await CreateOAuthApiClientAsync(turnContext).ConfigureAwait(false);
             var result = await client.UserToken.ExchangeAsyncAsync(userId, connectionName, turnContext.Activity.ChannelId, exchangeRequest, cancellationToken).ConfigureAwait(false);
 
             if (result is ErrorResponse errorResponse)
             {
-                result = new TokenResponse();
+                throw new InvalidOperationException($"Unable to exchange token: ({errorResponse?.Error?.Code}) {errorResponse?.Error?.Message}");
             }
 
             if (result is TokenResponse tokenResponse)
             {
-                // todo: temporary
-                if (string.IsNullOrEmpty(tokenResponse.Token))
-                {
-                    if (!string.IsNullOrEmpty(exchangeRequest.Uri))
-                    {
-                        tokenResponse.Token = "exchangeableToken" + Guid.NewGuid().ToString().Replace("-", string.Empty);
-                    }
-                    else
-                    {
-                        tokenResponse.Token = "token" + Guid.NewGuid().ToString().Replace("-", string.Empty);
-                    }
-                }
-
                 return tokenResponse;
             }
             else
