@@ -11,19 +11,16 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Bot.Builder.Adapters;
 using Microsoft.Bot.Builder.AI.Luis.TestUtils;
-using Microsoft.Bot.Configuration;
 using Microsoft.Bot.Connector;
 using Microsoft.Bot.Schema;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RichardSzalay.MockHttp;
+using Xunit;
 
 namespace Microsoft.Bot.Builder.AI.Luis.Tests
 {
-    [TestClass]
-
     #pragma warning disable CS0618 // Type or member is obsolete
     #pragma warning disable CS0612 // Type or member is obsolete
 
@@ -44,7 +41,7 @@ namespace Microsoft.Bot.Builder.AI.Luis.Tests
                 },
         };
 
-        [TestMethod]
+        [Fact]
         public void LuisRecognizerConstruction()
         {
             // Arrange
@@ -59,12 +56,12 @@ namespace Microsoft.Bot.Builder.AI.Luis.Tests
 
             // Assert
             var app = (LuisRecognizerOptions)fieldInfo.GetValue(recognizer);
-            Assert.AreEqual("b31aeaf3-3511-495b-a07f-571fc873214b", app.Application.ApplicationId);
-            Assert.AreEqual("048ec46dc58e495482b0c447cfdbd291", app.Application.EndpointKey);
-            Assert.AreEqual("https://westus.api.cognitive.microsoft.com", app.Application.Endpoint);
+            Assert.Equal("b31aeaf3-3511-495b-a07f-571fc873214b", app.Application.ApplicationId);
+            Assert.Equal("048ec46dc58e495482b0c447cfdbd291", app.Application.EndpointKey);
+            Assert.Equal("https://westus.api.cognitive.microsoft.com", app.Application.Endpoint);
         }
 
-        [TestMethod]
+        [Fact]
         public void LuisRecognizer_Timeout()
         {
             var endpoint = "https://westus.api.cognitive.microsoft.com/luis/v2.0/apps/b31aeaf3-3511-495b-a07f-571fc873214b?verbose=true&timezoneOffset=-360&subscription-key=048ec46dc58e495482b0c447cfdbd291&q=";
@@ -77,11 +74,11 @@ namespace Microsoft.Bot.Builder.AI.Luis.Tests
             };
 
             var recognizerWithTimeout = new LuisRecognizer(opts);
-            Assert.IsNotNull(recognizerWithTimeout);
-            Assert.AreEqual(expectedTimeout, LuisRecognizer.DefaultHttpClient.Timeout.Milliseconds);
+            Assert.NotNull(recognizerWithTimeout);
+            Assert.Equal(expectedTimeout, LuisRecognizer.DefaultHttpClient.Timeout.Milliseconds);
         }
 
-        [TestMethod]
+        [Fact]
         public void NullEndpoint()
         {
             // Arrange
@@ -94,10 +91,10 @@ namespace Microsoft.Bot.Builder.AI.Luis.Tests
 
             // Assert
             var app = (LuisRecognizerOptions)fieldInfo.GetValue(recognizerNull);
-            Assert.AreEqual("https://westus.api.cognitive.microsoft.com", app.Application.Endpoint);
+            Assert.Equal("https://westus.api.cognitive.microsoft.com", app.Application.Endpoint);
         }
 
-        [TestMethod]
+        [Fact]
         public void EmptyEndpoint()
         {
             // Arrange
@@ -111,18 +108,16 @@ namespace Microsoft.Bot.Builder.AI.Luis.Tests
 
             // Assert
             var app = (LuisRecognizerOptions)fieldInfo.GetValue(recognizerEmpty);
-            Assert.AreEqual("https://westus.api.cognitive.microsoft.com", app.Application.Endpoint);
+            Assert.Equal("https://westus.api.cognitive.microsoft.com", app.Application.Endpoint);
         }
 
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
+        [Fact]
         public void LuisRecognizer_NullLuisAppArg()
         {
-            var recognizerWithNullLuisApplication = new LuisRecognizer(new LuisRecognizerOptionsV2(application: null));
-            Assert.IsNotNull(recognizerWithNullLuisApplication);
+            Assert.Throws<ArgumentNullException>(() => new LuisRecognizer(new LuisRecognizerOptionsV2(application: null)));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task NullUtterance()
         {
             const string utterance = null;
@@ -134,16 +129,16 @@ namespace Microsoft.Bot.Builder.AI.Luis.Tests
             var context = GetContext(utterance);
             var result = await luisRecognizer.RecognizeAsync(context, CancellationToken.None);
 
-            Assert.IsNotNull(result);
-            Assert.IsNull(result.AlteredText);
-            Assert.AreEqual(utterance, result.Text);
-            Assert.IsNotNull(result.Intents);
-            Assert.AreEqual(0, result.Intents.Count);
-            Assert.IsNotNull(result.Entities);
-            Assert.AreEqual(0, result.Entities.Count);
+            Assert.NotNull(result);
+            Assert.Null(result.AlteredText);
+            Assert.Equal(utterance, result.Text);
+            Assert.NotNull(result.Intents);
+            Assert.Equal(0, result.Intents.Count);
+            Assert.NotNull(result.Entities);
+            Assert.Equal(0, result.Entities.Count);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task V1DatetimeResolution()
         {
             const string utterance = "at 4";
@@ -155,11 +150,11 @@ namespace Microsoft.Bot.Builder.AI.Luis.Tests
             var context = GetContext(utterance);
             var result = await luisRecognizer.RecognizeAsync(context, CancellationToken.None);
 
-            Assert.IsNotNull(result.Entities["datetime_time"]);
-            Assert.AreEqual(1, result.Entities["datetime_time"].Count());
-            Assert.AreEqual("ampm", (string)result.Entities["datetime_time"][0]["comment"]);
-            Assert.AreEqual("T04", (string)result.Entities["datetime_time"][0]["time"]);
-            Assert.AreEqual(1, result.Entities["$instance"]["datetime_time"].Count());
+            Assert.NotNull(result.Entities["datetime_time"]);
+            Assert.Single(result.Entities["datetime_time"]);
+            Assert.Equal("ampm", (string)result.Entities["datetime_time"][0]["comment"]);
+            Assert.Equal("T04", (string)result.Entities["datetime_time"][0]["time"]);
+            Assert.Single(result.Entities["$instance"]["datetime_time"]);
         }
 
         public ITurnContext GetContext(string utterance)
@@ -225,7 +220,7 @@ namespace Microsoft.Bot.Builder.AI.Luis.Tests
                     writer.Write(typedJson);
                 }
 
-                Assert.Fail($"Returned JSON in {newPath} != expected JSON in {expectedPath}");
+                Assert.Equal(newPath, expectedPath);
             }
             else
             {
@@ -233,7 +228,7 @@ namespace Microsoft.Bot.Builder.AI.Luis.Tests
             }
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TraceActivity()
         {
             const string utterance = @"My name is Emad";
@@ -255,23 +250,23 @@ namespace Microsoft.Bot.Builder.AI.Luis.Tests
                 activity =>
                 {
                     var traceActivity = activity as ITraceActivity;
-                    Assert.IsNotNull(traceActivity);
-                    Assert.AreEqual(LuisRecognizer.LuisTraceType, traceActivity.ValueType);
-                    Assert.AreEqual(LuisRecognizer.LuisTraceLabel, traceActivity.Label);
+                    Assert.NotNull(traceActivity);
+                    Assert.Equal(LuisRecognizer.LuisTraceType, traceActivity.ValueType);
+                    Assert.Equal(LuisRecognizer.LuisTraceLabel, traceActivity.Label);
 
                     var luisTraceInfo = JObject.FromObject(traceActivity.Value);
-                    Assert.IsNotNull(luisTraceInfo);
-                    Assert.IsNotNull(luisTraceInfo["recognizerResult"]);
-                    Assert.IsNotNull(luisTraceInfo["luisResult"]);
-                    Assert.IsNotNull(luisTraceInfo["luisOptions"]);
-                    Assert.IsNotNull(luisTraceInfo["luisModel"]);
+                    Assert.NotNull(luisTraceInfo);
+                    Assert.NotNull(luisTraceInfo["recognizerResult"]);
+                    Assert.NotNull(luisTraceInfo["luisResult"]);
+                    Assert.NotNull(luisTraceInfo["luisOptions"]);
+                    Assert.NotNull(luisTraceInfo["luisModel"]);
 
                     var recognizerResult = luisTraceInfo["recognizerResult"].ToObject<RecognizerResult>();
-                    Assert.AreEqual(recognizerResult.Text, utterance);
-                    Assert.IsNotNull(recognizerResult.Intents["SpecifyName"]);
-                    Assert.AreEqual(luisTraceInfo["luisResult"]["query"], utterance);
-                    Assert.AreEqual(luisTraceInfo["luisModel"]["ModelID"], AppId);
-                    Assert.AreEqual(luisTraceInfo["luisOptions"]["Staging"], default(bool?));
+                    Assert.Equal(utterance, recognizerResult.Text);
+                    Assert.NotNull(recognizerResult.Intents["SpecifyName"]);
+                    Assert.Equal(utterance, luisTraceInfo["luisResult"]["query"]);
+                    Assert.Equal(AppId, luisTraceInfo["luisModel"]["ModelID"]);
+                    Assert.Equal(default(bool?), luisTraceInfo["luisOptions"]["Staging"]);
                 },
                 "luisTraceInfo")
                 .Send(utterance)
@@ -279,78 +274,75 @@ namespace Microsoft.Bot.Builder.AI.Luis.Tests
                 .StartTestAsync();
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Composite1() => await TestJson<RecognizerResult>("Composite1.json");
 
-        [TestMethod]
+        [Fact]
         public async Task Composite2() => await TestJson<RecognizerResult>("Composite2.json");
 
-        [TestMethod]
+        [Fact]
         public async Task Composite3() => await TestJson<RecognizerResult>("Composite3.json");
 
-        [TestMethod]
+        [Fact]
         public async Task GeoPeopleOrdinal() => await TestJson<RecognizerResult>("GeoPeopleOrdinal.json");
 
-        [TestMethod]
+        [Fact]
         public async Task Minimal() => await TestJson<RecognizerResult>("Minimal.json");
 
-        [TestMethod]
+        [Fact]
         public async Task MinimalWithGeo() => await TestJson<RecognizerResult>("MinimalWithGeo.json");
 
-        [TestMethod]
+        [Fact]
         public async Task PrebuiltDomains() => await TestJson<RecognizerResult>("Prebuilt.json");
 
-        [TestMethod]
+        [Fact]
         public async Task Patterns() => await TestJson<RecognizerResult>("Patterns.json");
 
-        [TestMethod]
+        [Fact]
         public async Task Roles() => await TestJson<RecognizerResult>("roles.json");
 
-        [TestMethod]
+        [Fact]
         public async Task TypedEntities() => await TestJson<Contoso_App>("Typed.json");
 
-        [TestMethod]
+        [Fact]
         public async Task TypedPrebuiltDomains() => await TestJson<Contoso_App>("TypedPrebuilt.json");
 
-        [TestMethod]
+        [Fact]
         public void TopIntentReturnsTopIntent()
         {
             var greetingIntent = LuisRecognizer.TopIntent(_mockedResults);
-            Assert.AreEqual(greetingIntent, "Greeting");
+            Assert.Equal("Greeting", greetingIntent);
         }
 
-        [TestMethod]
+        [Fact]
         public void TopIntentReturnsDefaultIntentIfMinScoreIsHigher()
         {
             var defaultIntent = LuisRecognizer.TopIntent(_mockedResults, minScore: 0.5);
-            Assert.AreEqual(defaultIntent, "None");
+            Assert.Equal("None", defaultIntent);
         }
 
-        [TestMethod]
+        [Fact]
         public void TopIntentReturnsDefaultIntentIfProvided()
         {
             var defaultIntent = LuisRecognizer.TopIntent(_mockedResults, "Test2", 0.5);
-            Assert.AreEqual(defaultIntent, "Test2");
+            Assert.Equal("Test2", defaultIntent);
         }
 
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
+        [Fact]
         public void TopIntentThrowsArgumentNullExceptionIfResultsIsNull()
         {
             RecognizerResult nullResults = null;
-            var noIntent = LuisRecognizer.TopIntent(nullResults);
-            Assert.Fail();
-            Assert.IsNotNull(noIntent);
+            Assert.Throws<ArgumentNullException>(() => LuisRecognizer.TopIntent(nullResults));
         }
 
-        [TestMethod]
+        [Fact]
         public void TopIntentReturnsTopIntentIfScoreEqualsMinScore()
         {
             var defaultIntent = LuisRecognizer.TopIntent(_mockedResults, minScore: 0.4);
-            Assert.AreEqual(defaultIntent, "Greeting");
+            Assert.Equal("Greeting", defaultIntent);
         }
 
-        [TestMethod]
+        [Fact]
         public void UserAgentContainsProductVersion()
         {
             var application = new LuisApplication
@@ -377,18 +369,18 @@ namespace Microsoft.Bot.Builder.AI.Luis.Tests
             var turnContext = new TurnContext(adapter, activity);
 
             var recognizerResult = recognizer.RecognizeAsync(turnContext, CancellationToken.None).Result;
-            Assert.IsNotNull(recognizerResult);
+            Assert.NotNull(recognizerResult);
 
             var userAgent = clientHandler.UserAgent;
 
             // Verify we didn't unintentionally stamp on the user-agent from the client.
-            Assert.IsTrue(userAgent.Contains("Microsoft.Azure.CognitiveServices.Language.LUIS.Runtime.LUISRuntimeClient"));
+            Assert.Contains("Microsoft.Azure.CognitiveServices.Language.LUIS.Runtime.LUISRuntimeClient", userAgent);
 
             // And that we added the bot.builder package details.
-            Assert.IsTrue(userAgent.ToLower().Contains("microsoft.bot.builder.ai.luis/4"));
+            Assert.Contains("microsoft.bot.builder.ai.luis/4", userAgent.ToLower());
         }
 
-        [TestMethod]
+        [Fact]
         public void Telemetry_Construction()
         {
             // Arrange
@@ -402,13 +394,12 @@ namespace Microsoft.Bot.Builder.AI.Luis.Tests
 
             // Assert
             var app = (LuisRecognizerOptions)fieldInfo.GetValue(recognizer);
-            Assert.AreEqual("b31aeaf3-3511-495b-a07f-571fc873214b", app.Application.ApplicationId);
-            Assert.AreEqual("048ec46dc58e495482b0c447cfdbd291", app.Application.EndpointKey);
-            Assert.AreEqual("https://westus.api.cognitive.microsoft.com", app.Application.Endpoint);
+            Assert.Equal("b31aeaf3-3511-495b-a07f-571fc873214b", app.Application.ApplicationId);
+            Assert.Equal("048ec46dc58e495482b0c447cfdbd291", app.Application.EndpointKey);
+            Assert.Equal("https://westus.api.cognitive.microsoft.com", app.Application.Endpoint);
         }
 
-        [TestMethod]
-        [TestCategory("Telemetry")]
+        [Fact]
         public async Task Telemetry_OverrideOnLogAsync()
         {
             // Arrange
@@ -452,22 +443,21 @@ namespace Microsoft.Bot.Builder.AI.Luis.Tests
             var result = await recognizer.RecognizeAsync(turnContext, additionalProperties).ConfigureAwait(false);
 
             // Assert
-            Assert.IsNotNull(result);
-            Assert.AreEqual(telemetryClient.Invocations.Count, 1);
-            Assert.AreEqual(telemetryClient.Invocations[0].Arguments[0].ToString(), "LuisResult");
-            Assert.IsTrue(((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).ContainsKey("test"));
-            Assert.IsTrue(((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1])["test"] == "testvalue");
-            Assert.IsTrue(((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).ContainsKey("foo"));
-            Assert.IsTrue(((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1])["foo"] == "foovalue");
-            Assert.IsTrue(((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).ContainsKey("applicationId"));
-            Assert.IsTrue(((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).ContainsKey("intent"));
-            Assert.IsTrue(((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).ContainsKey("intentScore"));
-            Assert.IsTrue(((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).ContainsKey("fromId"));
-            Assert.IsTrue(((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).ContainsKey("entities"));
+            Assert.NotNull(result);
+            Assert.Single(telemetryClient.Invocations);
+            Assert.Equal("LuisResult", telemetryClient.Invocations[0].Arguments[0].ToString());
+            Assert.Contains("test", ((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).Keys);
+            Assert.True(((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1])["test"] == "testvalue");
+            Assert.Contains("foo", ((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).Keys);
+            Assert.True(((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1])["foo"] == "foovalue");
+            Assert.Contains("applicationId", ((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).Keys);
+            Assert.Contains("intent", ((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).Keys);
+            Assert.Contains("intentScore", ((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).Keys);
+            Assert.Contains("fromId", ((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).Keys);
+            Assert.Contains("entities", ((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).Keys);
         }
 
-        [TestMethod]
-        [TestCategory("Telemetry")]
+        [Fact]
         public async Task Telemetry_PiiLoggedAsync()
         {
             // Arrange
@@ -500,22 +490,21 @@ namespace Microsoft.Bot.Builder.AI.Luis.Tests
             var result = await recognizer.RecognizeAsync(turnContext, null).ConfigureAwait(false);
 
             // Assert
-            Assert.IsNotNull(result);
-            Assert.AreEqual(telemetryClient.Invocations.Count, 1);
-            Assert.AreEqual(telemetryClient.Invocations[0].Arguments[0].ToString(), "LuisResult");
-            Assert.IsTrue(((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).Count == 8);
-            Assert.IsTrue(((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).ContainsKey("applicationId"));
-            Assert.IsTrue(((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).ContainsKey("intent"));
-            Assert.IsTrue(((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).ContainsKey("intentScore"));
-            Assert.IsTrue(((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).ContainsKey("intent2"));
-            Assert.IsTrue(((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).ContainsKey("intentScore2"));
-            Assert.IsTrue(((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).ContainsKey("fromId"));
-            Assert.IsTrue(((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).ContainsKey("entities"));
-            Assert.IsTrue(((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).ContainsKey("question"));
+            Assert.NotNull(result);
+            Assert.Single(telemetryClient.Invocations);
+            Assert.Equal("LuisResult", telemetryClient.Invocations[0].Arguments[0].ToString());
+            Assert.True(((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).Count == 8);
+            Assert.True(((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).ContainsKey("applicationId"));
+            Assert.True(((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).ContainsKey("intent"));
+            Assert.True(((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).ContainsKey("intentScore"));
+            Assert.True(((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).ContainsKey("intent2"));
+            Assert.True(((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).ContainsKey("intentScore2"));
+            Assert.True(((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).ContainsKey("fromId"));
+            Assert.True(((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).ContainsKey("entities"));
+            Assert.True(((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).ContainsKey("question"));
         }
 
-        [TestMethod]
-        [TestCategory("Telemetry")]
+        [Fact]
         public async Task Telemetry_NoPiiLoggedAsync()
         {
             // Arrange
@@ -547,22 +536,21 @@ namespace Microsoft.Bot.Builder.AI.Luis.Tests
             var result = await recognizer.RecognizeAsync(turnContext, null).ConfigureAwait(false);
 
             // Assert
-            Assert.IsNotNull(result);
-            Assert.AreEqual(telemetryClient.Invocations.Count, 1);
-            Assert.AreEqual(telemetryClient.Invocations[0].Arguments[0].ToString(), "LuisResult");
-            Assert.IsTrue(((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).Count == 7);
-            Assert.IsTrue(((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).ContainsKey("applicationId"));
-            Assert.IsTrue(((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).ContainsKey("intent"));
-            Assert.IsTrue(((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).ContainsKey("intentScore"));
-            Assert.IsTrue(((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).ContainsKey("intent2"));
-            Assert.IsTrue(((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).ContainsKey("intentScore2"));
-            Assert.IsTrue(((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).ContainsKey("fromId"));
-            Assert.IsTrue(((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).ContainsKey("entities"));
-            Assert.IsFalse(((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).ContainsKey("question"));
+            Assert.NotNull(result);
+            Assert.Single(telemetryClient.Invocations);
+            Assert.Equal("LuisResult", telemetryClient.Invocations[0].Arguments[0].ToString());
+            Assert.True(((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).Count == 7);
+            Assert.Contains("applicationId", ((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).Keys);
+            Assert.Contains("intent", ((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).Keys);
+            Assert.Contains("intentScore", ((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).Keys);
+            Assert.Contains("intent2", ((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).Keys);
+            Assert.Contains("intentScore2", ((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).Keys);
+            Assert.Contains("fromId", ((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).Keys);
+            Assert.Contains("entities", ((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).Keys);
+            Assert.DoesNotContain("question", ((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).Keys);
         }
 
-        [TestMethod]
-        [TestCategory("Telemetry")]
+        [Fact]
         public async Task Telemetry_OverrideOnDeriveAsync()
         {
             // Arrange
@@ -599,22 +587,21 @@ namespace Microsoft.Bot.Builder.AI.Luis.Tests
             var result = await recognizer.RecognizeAsync(turnContext, additionalProperties).ConfigureAwait(false);
 
             // Assert
-            Assert.IsNotNull(result);
-            Assert.AreEqual(telemetryClient.Invocations.Count, 2);
-            Assert.AreEqual(telemetryClient.Invocations[0].Arguments[0].ToString(), "LuisResult");
-            Assert.IsTrue(((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).ContainsKey("MyImportantProperty"));
-            Assert.IsTrue(((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1])["MyImportantProperty"] == "myImportantValue");
-            Assert.IsTrue(((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).ContainsKey("test"));
-            Assert.IsTrue(((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1])["test"] == "testvalue");
-            Assert.IsTrue(((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).ContainsKey("foo"));
-            Assert.IsTrue(((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1])["foo"] == "foovalue");
-            Assert.AreEqual(telemetryClient.Invocations[1].Arguments[0].ToString(), "MySecondEvent");
-            Assert.IsTrue(((Dictionary<string, string>)telemetryClient.Invocations[1].Arguments[1]).ContainsKey("MyImportantProperty2"));
-            Assert.IsTrue(((Dictionary<string, string>)telemetryClient.Invocations[1].Arguments[1])["MyImportantProperty2"] == "myImportantValue2");
+            Assert.NotNull(result);
+            Assert.Equal(2, telemetryClient.Invocations.Count);
+            Assert.Equal("LuisResult", telemetryClient.Invocations[0].Arguments[0].ToString());
+            Assert.Contains("MyImportantProperty", ((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).Keys);
+            Assert.Equal("myImportantValue", ((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1])["MyImportantProperty"]);
+            Assert.Contains("test", ((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).Keys);
+            Assert.Equal("testvalue", ((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1])["test"]);
+            Assert.Contains("foo", ((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).Keys);
+            Assert.Equal("foovalue", ((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1])["foo"]);
+            Assert.Equal("MySecondEvent", telemetryClient.Invocations[1].Arguments[0].ToString());
+            Assert.Contains("MyImportantProperty2", ((Dictionary<string, string>)telemetryClient.Invocations[1].Arguments[1]).Keys);
+            Assert.Equal("myImportantValue2", ((Dictionary<string, string>)telemetryClient.Invocations[1].Arguments[1])["MyImportantProperty2"]);
         }
 
-        [TestMethod]
-        [TestCategory("Telemetry")]
+        [Fact]
         public async Task Telemetry_OverrideFillAsync()
         {
             // Arrange
@@ -657,27 +644,26 @@ namespace Microsoft.Bot.Builder.AI.Luis.Tests
             var result = await recognizer.RecognizeAsync(turnContext, additionalProperties, additionalMetrics).ConfigureAwait(false);
 
             // Assert
-            Assert.IsNotNull(result);
-            Assert.AreEqual(telemetryClient.Invocations.Count, 2);
-            Assert.AreEqual(telemetryClient.Invocations[0].Arguments[0].ToString(), "LuisResult");
-            Assert.IsTrue(((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).ContainsKey("MyImportantProperty"));
-            Assert.IsTrue(((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1])["MyImportantProperty"] == "myImportantValue");
-            Assert.IsTrue(((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).ContainsKey("test"));
-            Assert.IsTrue(((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1])["test"] == "testvalue");
-            Assert.IsTrue(((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).ContainsKey("foo"));
-            Assert.IsTrue(((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1])["foo"] == "foovalue");
-            Assert.IsTrue(((Dictionary<string, double>)telemetryClient.Invocations[0].Arguments[2]).ContainsKey("moo"));
-            Assert.AreEqual(((Dictionary<string, double>)telemetryClient.Invocations[0].Arguments[2])["moo"], 3.14159);
-            Assert.IsTrue(((Dictionary<string, double>)telemetryClient.Invocations[0].Arguments[2]).ContainsKey("boo"));
-            Assert.AreEqual(((Dictionary<string, double>)telemetryClient.Invocations[0].Arguments[2])["boo"], 2.11);
+            Assert.NotNull(result);
+            Assert.Equal(2, telemetryClient.Invocations.Count);
+            Assert.Equal("LuisResult", telemetryClient.Invocations[0].Arguments[0].ToString());
+            Assert.Contains("MyImportantProperty", ((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).Keys);
+            Assert.Equal("myImportantValue", ((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1])["MyImportantProperty"]);
+            Assert.Contains("test", ((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).Keys);
+            Assert.Equal("testvalue", ((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1])["test"]);
+            Assert.Contains("foo", ((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).Keys);
+            Assert.Contains("foovalue", ((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1])["foo"]);
+            Assert.Contains("moo", ((Dictionary<string, double>)telemetryClient.Invocations[0].Arguments[2]).Keys);
+            Assert.Equal(3.14159, ((Dictionary<string, double>)telemetryClient.Invocations[0].Arguments[2])["moo"]);
+            Assert.Contains("boo", ((Dictionary<string, double>)telemetryClient.Invocations[0].Arguments[2]).Keys);
+            Assert.Equal(2.11, ((Dictionary<string, double>)telemetryClient.Invocations[0].Arguments[2])["boo"]);
 
-            Assert.AreEqual(telemetryClient.Invocations[1].Arguments[0].ToString(), "MySecondEvent");
-            Assert.IsTrue(((Dictionary<string, string>)telemetryClient.Invocations[1].Arguments[1]).ContainsKey("MyImportantProperty2"));
-            Assert.IsTrue(((Dictionary<string, string>)telemetryClient.Invocations[1].Arguments[1])["MyImportantProperty2"] == "myImportantValue2");
+            Assert.Equal("MySecondEvent", telemetryClient.Invocations[1].Arguments[0].ToString());
+            Assert.True(((Dictionary<string, string>)telemetryClient.Invocations[1].Arguments[1]).ContainsKey("MyImportantProperty2"));
+            Assert.True(((Dictionary<string, string>)telemetryClient.Invocations[1].Arguments[1])["MyImportantProperty2"] == "myImportantValue2");
         }
 
-        [TestMethod]
-        [TestCategory("Telemetry")]
+        [Fact]
         public async Task Telemetry_NoOverrideAsync()
         {
             // Arrange
@@ -711,18 +697,17 @@ namespace Microsoft.Bot.Builder.AI.Luis.Tests
             var result = await recognizer.RecognizeAsync(turnContext, CancellationToken.None).ConfigureAwait(false);
 
             // Assert
-            Assert.IsNotNull(result);
-            Assert.AreEqual(telemetryClient.Invocations.Count, 1);
-            Assert.AreEqual(telemetryClient.Invocations[0].Arguments[0].ToString(), "LuisResult");
-            Assert.IsTrue(((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).ContainsKey("applicationId"));
-            Assert.IsTrue(((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).ContainsKey("intent"));
-            Assert.IsTrue(((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).ContainsKey("intentScore"));
-            Assert.IsTrue(((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).ContainsKey("fromId"));
-            Assert.IsTrue(((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).ContainsKey("entities"));
+            Assert.NotNull(result);
+            Assert.Single(telemetryClient.Invocations);
+            Assert.Equal("LuisResult", telemetryClient.Invocations[0].Arguments[0].ToString());
+            Assert.Contains("applicationId", ((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).Keys);
+            Assert.Contains("intent", ((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).Keys);
+            Assert.Contains("intentScore", ((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).Keys);
+            Assert.Contains("fromId", ((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).Keys);
+            Assert.Contains("entities", ((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).Keys);
         }
 
-        [TestMethod]
-        [TestCategory("Telemetry")]
+        [Fact]
         public async Task Telemetry_Convert()
         {
             // Arrange
@@ -755,18 +740,17 @@ namespace Microsoft.Bot.Builder.AI.Luis.Tests
             var result = await recognizer.RecognizeAsync<TelemetryConvertResult>(turnContext, CancellationToken.None).ConfigureAwait(false);
 
             // Assert
-            Assert.IsNotNull(result);
-            Assert.AreEqual(telemetryClient.Invocations.Count, 1);
-            Assert.AreEqual(telemetryClient.Invocations[0].Arguments[0].ToString(), "LuisResult");
-            Assert.IsTrue(((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).ContainsKey("applicationId"));
-            Assert.IsTrue(((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).ContainsKey("intent"));
-            Assert.IsTrue(((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).ContainsKey("intentScore"));
-            Assert.IsTrue(((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).ContainsKey("fromId"));
-            Assert.IsTrue(((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).ContainsKey("entities"));
+            Assert.NotNull(result);
+            Assert.Single(telemetryClient.Invocations);
+            Assert.Equal("LuisResult", telemetryClient.Invocations[0].Arguments[0].ToString());
+            Assert.Contains("applicationId", ((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).Keys);
+            Assert.Contains("intent", ((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).Keys);
+            Assert.Contains("intentScore", ((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).Keys);
+            Assert.Contains("fromId", ((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).Keys);
+            Assert.Contains("entities", ((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).Keys);
         }
 
-        [TestMethod]
-        [TestCategory("Telemetry")]
+        [Fact]
         public async Task Telemetry_ConvertParms()
         {
             // Arrange
@@ -810,22 +794,22 @@ namespace Microsoft.Bot.Builder.AI.Luis.Tests
             var result = await recognizer.RecognizeAsync<TelemetryConvertResult>(turnContext, additionalProperties, additionalMetrics, CancellationToken.None).ConfigureAwait(false);
 
             // Assert
-            Assert.IsNotNull(result);
-            Assert.AreEqual(telemetryClient.Invocations.Count, 1);
-            Assert.AreEqual(telemetryClient.Invocations[0].Arguments[0].ToString(), "LuisResult");
-            Assert.IsTrue(((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).ContainsKey("test"));
-            Assert.IsTrue(((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1])["test"] == "testvalue");
-            Assert.IsTrue(((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).ContainsKey("foo"));
-            Assert.IsTrue(((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1])["foo"] == "foovalue");
-            Assert.IsTrue(((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).ContainsKey("applicationId"));
-            Assert.IsTrue(((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).ContainsKey("intent"));
-            Assert.IsTrue(((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).ContainsKey("intentScore"));
-            Assert.IsTrue(((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).ContainsKey("fromId"));
-            Assert.IsTrue(((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).ContainsKey("entities"));
-            Assert.IsTrue(((Dictionary<string, double>)telemetryClient.Invocations[0].Arguments[2]).ContainsKey("moo"));
-            Assert.AreEqual(((Dictionary<string, double>)telemetryClient.Invocations[0].Arguments[2])["moo"], 3.14159);
-            Assert.IsTrue(((Dictionary<string, double>)telemetryClient.Invocations[0].Arguments[2]).ContainsKey("luis"));
-            Assert.AreEqual(((Dictionary<string, double>)telemetryClient.Invocations[0].Arguments[2])["luis"], 1.0001);
+            Assert.NotNull(result);
+            Assert.Single(telemetryClient.Invocations);
+            Assert.Equal("LuisResult", telemetryClient.Invocations[0].Arguments[0].ToString());
+            Assert.Contains("test", ((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).Keys);
+            Assert.True(((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1])["test"] == "testvalue");
+            Assert.Contains("foo", ((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).Keys);
+            Assert.True(((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1])["foo"] == "foovalue");
+            Assert.Contains("applicationId", ((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).Keys);
+            Assert.Contains("intent", ((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).Keys);
+            Assert.Contains("intentScore", ((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).Keys);
+            Assert.Contains("fromId", ((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).Keys);
+            Assert.Contains("entities", ((Dictionary<string, string>)telemetryClient.Invocations[0].Arguments[1]).Keys);
+            Assert.Contains("moo", ((Dictionary<string, double>)telemetryClient.Invocations[0].Arguments[2]).Keys);
+            Assert.Equal(3.14159, ((Dictionary<string, double>)telemetryClient.Invocations[0].Arguments[2])["moo"]);
+            Assert.Contains("luis", ((Dictionary<string, double>)telemetryClient.Invocations[0].Arguments[2]).Keys);
+            Assert.Equal(1.0001, ((Dictionary<string, double>)telemetryClient.Invocations[0].Arguments[2])["luis"]);
         }
 
         private IRecognizer GetLuisRecognizer(MockedHttpClientHandler httpClientHandler, bool verbose = false, LuisPredictionOptions options = null)

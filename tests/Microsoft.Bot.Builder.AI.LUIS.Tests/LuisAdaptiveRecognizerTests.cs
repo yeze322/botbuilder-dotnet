@@ -10,12 +10,11 @@ using Microsoft.Bot.Builder.AI.Luis;
 using Microsoft.Bot.Builder.AI.Luis.Testing;
 using Microsoft.Bot.Builder.Dialogs.Declarative.Resources;
 using Microsoft.Extensions.Configuration;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
+using Xunit;
 
 namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Tests
 {
-    [TestClass]
     public class LuisAdaptiveRecognizerTests
     {
         private const string DynamicListJSon = @"[
@@ -71,10 +70,7 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Tests
 
         public static IConfiguration Configuration { get; set; }
 
-        public TestContext TestContext { get; set; }
-
-        [ClassInitialize]
-        public static void ClassInitialize(TestContext context)
+        public static void ClassInitialize()
         {
             Configuration = new ConfigurationBuilder()
                 .UseMockLuisSettings(DynamicListsDirectory, "TestBot")
@@ -85,62 +81,62 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Tests
                 .RegisterType(LuisAdaptiveRecognizer.Kind, typeof(MockLuisRecognizer), new MockLuisLoader(Configuration));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task DynamicLists()
         {
             await TestUtils.RunTestScript(ResourceExplorer, configuration: Configuration);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task DynamicListsExpression()
         {
             await TestUtils.RunTestScript(ResourceExplorer, configuration: Configuration);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ExternalEntities()
         {
             await TestUtils.RunTestScript(ResourceExplorer, configuration: Configuration);
         }
 
-        [TestMethod]
+        [Fact]
         public void DeserializeDynamicList()
         {
             var dl = JsonConvert.DeserializeObject<List<DynamicList>>(DynamicListJSon);
-            Assert.AreEqual(2, dl.Count);
-            Assert.AreEqual("alphaEntity", dl[0].Entity);
-            Assert.AreEqual(2, dl[0].List.Count);
+            Assert.Equal(2, dl.Count);
+            Assert.Equal("alphaEntity", dl[0].Entity);
+            Assert.Equal(2, dl[0].List.Count);
         }
 
-        [TestMethod]
+        [Fact]
         public void DeserializeSerializedDynamicList()
         {
             var ol = JsonConvert.DeserializeObject<List<DynamicList>>(DynamicListJSon);
             var json = JsonConvert.SerializeObject(ol);
             var dl = JsonConvert.DeserializeObject<List<DynamicList>>(json);
-            Assert.AreEqual(2, dl.Count);
-            Assert.AreEqual("alphaEntity", dl[0].Entity);
-            Assert.AreEqual(2, dl[0].List.Count);
+            Assert.Equal(2, dl.Count);
+            Assert.Equal("alphaEntity", dl[0].Entity);
+            Assert.Equal(2, dl[0].List.Count);
         }
 
-        [TestMethod]
+        [Fact]
         public void DeserializeArrayExpression()
         {
             var ae = JsonConvert.DeserializeObject<ArrayExpression<DynamicList>>(DynamicListJSon, new ArrayExpressionConverter<DynamicList>());
             var dl = ae.GetValue(null);
-            Assert.AreEqual(2, dl.Count);
-            Assert.AreEqual("alphaEntity", dl[0].Entity);
-            Assert.AreEqual(2, dl[0].List.Count);
+            Assert.Equal(2, dl.Count);
+            Assert.Equal("alphaEntity", dl[0].Entity);
+            Assert.Equal(2, dl[0].List.Count);
         }
 
-        [TestMethod]
+        [Fact]
         public void DeserializeLuisAdaptiveRecognizer()
         {
             var recognizer = JsonConvert.DeserializeObject<LuisAdaptiveRecognizer>(RecognizerJson, new ArrayExpressionConverter<DynamicList>());
             var dl = recognizer.DynamicLists.GetValue(null);
-            Assert.AreEqual(2, dl.Count);
-            Assert.AreEqual("alphaEntity", dl[0].Entity);
-            Assert.AreEqual(2, dl[0].List.Count);
+            Assert.Equal(2, dl.Count);
+            Assert.Equal("alphaEntity", dl[0].Entity);
+            Assert.Equal(2, dl[0].List.Count);
         }
     }
 }
