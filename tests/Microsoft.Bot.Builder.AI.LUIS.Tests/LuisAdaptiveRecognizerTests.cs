@@ -70,6 +70,7 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Tests
 
         public static IConfiguration Configuration { get; set; }
 
+        [Fact]
         public static void ClassInitialize()
         {
             Configuration = new ConfigurationBuilder()
