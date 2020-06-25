@@ -17,10 +17,8 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Teams.Tests
     {
         public static ResourceExplorer ResourceExplorer { get; set; }
 
-        public TestContext TestContext { get; set; }
-
         [ClassInitialize]
-        public static void ClassInitialize(TestContext context)
+        public static void ClassInitialize()
         {
             ResourceExplorer = new ResourceExplorer()
                 .AddFolder(Path.Combine(TestUtils.GetProjectPath(), "Tests", nameof(ConditionalTests)), monitorChanges: false);
