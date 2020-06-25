@@ -3,75 +3,68 @@
 
 using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Bot.Builder.Tests;
 using Microsoft.Bot.Schema;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 using Newtonsoft.Json;
+using Xunit;
 
 namespace Microsoft.Bot.Builder.Azure.Tests
 {
-    [TestClass]
     public class AzureBlobStorageTests : StorageBaseTests
     {
         private const string ConnectionString = @"AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;DefaultEndpointsProtocol=http;BlobEndpoint=http://127.0.0.1:10000/devstoreaccount1;QueueEndpoint=http://127.0.0.1:10001/devstoreaccount1;TableEndpoint=http://127.0.0.1:10002/devstoreaccount1;";
 
-        public TestContext TestContext { get; set; }
-
-        public string ContainerName
+        public string ContainerName(string name)
         {
-            get
-            {
-                var containerName = TestContext.TestName.ToLower().Replace("_", string.Empty);
-                NameValidator.ValidateContainerName(containerName);
-                return containerName;
-            }
+            var containerName = name.ToLower().Replace("_", string.Empty);
+            NameValidator.ValidateContainerName(containerName);
+            return containerName;
         }
 
         // These tests require Azure Storage Emulator v5.7
-        public async Task ContainerInit()
+        public async Task ContainerInit(string name)
         {
             var container = CloudStorageAccount.Parse(ConnectionString)
                 .CreateCloudBlobClient()
-                .GetContainerReference(ContainerName);
+                .GetContainerReference(ContainerName(name));
             await container.DeleteIfExistsAsync();
         }
 
-        [TestMethod]
+        [Fact]
         public async Task BlobStorageParamTest()
         {
             if (StorageEmulatorHelper.CheckEmulator())
             {
-                await ContainerInit();
+                await ContainerInit("BlobStorageParamTest");
 
-                Assert.ThrowsException<FormatException>(() => new AzureBlobStorage("123", ContainerName));
+                Assert.Throws<FormatException>(() => new AzureBlobStorage("123", ContainerName("BlobStorageParamTest")));
 
-                Assert.ThrowsException<ArgumentNullException>(() =>
-                    new AzureBlobStorage((CloudStorageAccount)null, ContainerName));
+                Assert.Throws<ArgumentNullException>(() =>
+                    new AzureBlobStorage((CloudStorageAccount)null, ContainerName("BlobStorageParamTest")));
 
-                Assert.ThrowsException<ArgumentNullException>(() =>
-                    new AzureBlobStorage((string)null, ContainerName));
+                Assert.Throws<ArgumentNullException>(() =>
+                    new AzureBlobStorage((string)null, ContainerName("BlobStorageParamTest")));
 
-                Assert.ThrowsException<ArgumentNullException>(() =>
+                Assert.Throws<ArgumentNullException>(() =>
                     new AzureBlobStorage((CloudStorageAccount)null, null));
 
-                Assert.ThrowsException<ArgumentNullException>(() => new AzureBlobStorage((string)null, null));
+                Assert.Throws<ArgumentNullException>(() => new AzureBlobStorage((string)null, null));
 
-                Assert.ThrowsException<ArgumentNullException>(() =>
-                    new AzureBlobStorage(CloudStorageAccount.Parse(ConnectionString), ContainerName, (JsonSerializer)null));
+                Assert.Throws<ArgumentNullException>(() =>
+                    new AzureBlobStorage(CloudStorageAccount.Parse(ConnectionString), ContainerName("BlobStorageParamTest"), (JsonSerializer)null));
             }
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestBlobStorageWriteRead()
         {
             if (StorageEmulatorHelper.CheckEmulator())
             {
-                await ContainerInit();
+                await ContainerInit("BlobStorageParamTest");
 
                 // Arrange
                 var storage = GetStorage();
@@ -87,18 +80,18 @@ namespace Microsoft.Bot.Builder.Azure.Tests
                 var result = await storage.ReadAsync(new[] { "x", "y" });
 
                 // Assert
-                Assert.AreEqual(2, result.Count);
-                Assert.AreEqual("hello", result["x"]);
-                Assert.AreEqual("world", result["y"]);
+                Assert.Equal(2, result.Count);
+                Assert.Equal("hello", result["x"]);
+                Assert.Equal("world", result["y"]);
             }
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestBlobStorageWriteDeleteRead()
         {
             if (StorageEmulatorHelper.CheckEmulator())
             {
-                await ContainerInit();
+                await ContainerInit("BlobStorageParamTest");
 
                 // Arrange
                 var storage = GetStorage();
@@ -115,17 +108,17 @@ namespace Microsoft.Bot.Builder.Azure.Tests
                 var result = await storage.ReadAsync(new[] { "x", "y" });
 
                 // Assert
-                Assert.AreEqual(1, result.Count);
-                Assert.AreEqual("world", result["y"]);
+                Assert.Equal(1, result.Count);
+                Assert.Equal("world", result["y"]);
             }
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestBlobStorageChanges()
         {
             if (StorageEmulatorHelper.CheckEmulator())
             {
-                await ContainerInit();
+                await ContainerInit("BlobStorageParamTest");
 
                 // Arrange
                 var storage = GetStorage();
@@ -138,18 +131,18 @@ namespace Microsoft.Bot.Builder.Azure.Tests
                 var result = await storage.ReadAsync(new[] { "a", "b", "c", "d", "e" });
 
                 // Assert
-                Assert.AreEqual(2, result.Count);
-                Assert.AreEqual("1.1", result["a"]);
-                Assert.AreEqual("3.0", result["c"]);
+                Assert.Equal(2, result.Count);
+                Assert.Equal("1.1", result["a"]);
+                Assert.Equal("3.0", result["c"]);
             }
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestConversationStateBlobStorage()
         {
             if (StorageEmulatorHelper.CheckEmulator())
             {
-                await ContainerInit();
+                await ContainerInit("BlobStorageParamTest");
 
                 // Arrange
                 var storage = GetStorage();
@@ -174,15 +167,15 @@ namespace Microsoft.Bot.Builder.Azure.Tests
                 var propValue2 = await propAccessor.GetAsync(turnContext2);
 
                 // Assert
-                Assert.AreEqual("hello", propValue2.X);
-                Assert.AreEqual("world", propValue2.Y);
+                Assert.Equal("hello", propValue2.X);
+                Assert.Equal("world", propValue2.Y);
 
                 await propAccessor.DeleteAsync(turnContext1);
                 await conversationState.SaveChangesAsync(turnContext1);
             }
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestConversationStateBlobStorage_TypeNameHandlingDefault()
         {
             if (StorageEmulatorHelper.CheckEmulator())
@@ -191,7 +184,7 @@ namespace Microsoft.Bot.Builder.Azure.Tests
             }
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TestConversationStateBlobStorage_TypeNameHandlingNone()
         {
             if (StorageEmulatorHelper.CheckEmulator())
@@ -200,7 +193,7 @@ namespace Microsoft.Bot.Builder.Azure.Tests
             }
         }
 
-        [TestMethod]
+        [Fact]
         public async Task StatePersistsThroughMultiTurn_TypeNameHandlingNone()
         {
             if (StorageEmulatorHelper.CheckEmulator())
@@ -213,7 +206,7 @@ namespace Microsoft.Bot.Builder.Azure.Tests
         {
             if (StorageEmulatorHelper.CheckEmulator())
             {
-                await ContainerInit();
+                await ContainerInit("BlobStorageParamTest");
 
                 // Arrange
                 var conversationState = new ConversationState(storage);
@@ -236,8 +229,8 @@ namespace Microsoft.Bot.Builder.Azure.Tests
                 var propValue2 = await propAccessor.GetAsync(turnContext2);
 
                 // Assert
-                Assert.AreEqual("hello", propValue2.X);
-                Assert.AreEqual("world", propValue2.Y);
+                Assert.Equal("hello", propValue2.X);
+                Assert.Equal("world", propValue2.Y);
             }
         }
 
@@ -248,12 +241,12 @@ namespace Microsoft.Bot.Builder.Azure.Tests
             {
                 return new AzureBlobStorage(
                     storageAccount,
-                    ContainerName,
+                    ContainerName("GetStorage"),
                     new JsonSerializer() { TypeNameHandling = TypeNameHandling.None });
             }
             else
             {
-                return new AzureBlobStorage(storageAccount, ContainerName);
+                return new AzureBlobStorage(storageAccount, ContainerName("GetStorage"));
             }
         }
 

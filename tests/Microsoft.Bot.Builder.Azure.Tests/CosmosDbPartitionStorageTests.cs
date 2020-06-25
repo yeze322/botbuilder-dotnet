@@ -11,7 +11,7 @@ using Microsoft.Azure.Cosmos;
 using Microsoft.Bot.Builder.Adapters;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Builder.Tests;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 
 namespace Microsoft.Bot.Builder.Azure.Tests
 {
@@ -111,14 +111,14 @@ namespace Microsoft.Bot.Builder.Azure.Tests
             _storage = null;
         }
 
-        [TestMethod]
+        [Fact]
         public void Constructor_Should_Throw_On_InvalidOptions()
         {
             // No Options. Should throw.
-            Assert.ThrowsException<ArgumentNullException>(() => new CosmosDbPartitionedStorage(null));
+            Assert.Throws<ArgumentNullException>(() => new CosmosDbPartitionedStorage(null));
 
             // No Endpoint. Should throw.
-            Assert.ThrowsException<ArgumentNullException>(() => new CosmosDbPartitionedStorage(new CosmosDbPartitionedStorageOptions()
+            Assert.Throws<ArgumentNullException>(() => new CosmosDbPartitionedStorage(new CosmosDbPartitionedStorageOptions()
             {
                 AuthKey = "test",
                 ContainerId = "testId",
@@ -127,7 +127,7 @@ namespace Microsoft.Bot.Builder.Azure.Tests
             }));
 
             // No Auth Key. Should throw.
-            Assert.ThrowsException<ArgumentException>(() => new CosmosDbPartitionedStorage(new CosmosDbPartitionedStorageOptions()
+            Assert.Throws<ArgumentException>(() => new CosmosDbPartitionedStorage(new CosmosDbPartitionedStorageOptions()
             {
                 AuthKey = null,
                 ContainerId = "testId",
@@ -136,7 +136,7 @@ namespace Microsoft.Bot.Builder.Azure.Tests
             }));
 
             // No Database Id. Should throw.
-            Assert.ThrowsException<ArgumentException>(() => new CosmosDbPartitionedStorage(new CosmosDbPartitionedStorageOptions()
+            Assert.Throws<ArgumentException>(() => new CosmosDbPartitionedStorage(new CosmosDbPartitionedStorageOptions()
             {
                 AuthKey = "testAuthKey",
                 ContainerId = "testId",
@@ -145,7 +145,7 @@ namespace Microsoft.Bot.Builder.Azure.Tests
             }));
 
             // No Container Id. Should throw.
-            Assert.ThrowsException<ArgumentException>(() => new CosmosDbPartitionedStorage(new CosmosDbPartitionedStorageOptions()
+            Assert.Throws<ArgumentException>(() => new CosmosDbPartitionedStorage(new CosmosDbPartitionedStorageOptions()
             {
                 AuthKey = "testAuthKey",
                 ContainerId = null,
@@ -154,7 +154,7 @@ namespace Microsoft.Bot.Builder.Azure.Tests
             }));
 
             // Invalid Row Key characters in KeySuffix
-            Assert.ThrowsException<ArgumentException>(() => new CosmosDbPartitionedStorage(new CosmosDbPartitionedStorageOptions()
+            Assert.Throws<ArgumentException>(() => new CosmosDbPartitionedStorage(new CosmosDbPartitionedStorageOptions()
             {
                 AuthKey = "testAuthKey",
                 ContainerId = "testId",
@@ -164,7 +164,7 @@ namespace Microsoft.Bot.Builder.Azure.Tests
                 CompatibilityMode = false
             }));
 
-            Assert.ThrowsException<ArgumentException>(() => new CosmosDbPartitionedStorage(new CosmosDbPartitionedStorageOptions()
+            Assert.Throws<ArgumentException>(() => new CosmosDbPartitionedStorage(new CosmosDbPartitionedStorageOptions()
             {
                 AuthKey = "testAuthKey",
                 ContainerId = "testId",
@@ -176,7 +176,7 @@ namespace Microsoft.Bot.Builder.Azure.Tests
         }
 
         // NOTE: THESE TESTS REQUIRE THAT THE COSMOS DB EMULATOR IS INSTALLED AND STARTED !!!!!!!!!!!!!!!!!
-        [TestMethod]
+        [Fact]
         public async Task CreateObjectTest()
         {
             if (CheckEmulator())
@@ -186,7 +186,7 @@ namespace Microsoft.Bot.Builder.Azure.Tests
         }
 
         // NOTE: THESE TESTS REQUIRE THAT THE COSMOS DB EMULATOR IS INSTALLED AND STARTED !!!!!!!!!!!!!!!!!
-        [TestMethod]
+        [Fact]
         public async Task ReadUnknownTest()
         {
             if (CheckEmulator())
@@ -196,7 +196,7 @@ namespace Microsoft.Bot.Builder.Azure.Tests
         }
 
         // NOTE: THESE TESTS REQUIRE THAT THE COSMOS DB EMULATOR IS INSTALLED AND STARTED !!!!!!!!!!!!!!!!!
-        [TestMethod]
+        [Fact]
         public async Task UpdateObjectTest()
         {
             if (CheckEmulator())
@@ -206,7 +206,7 @@ namespace Microsoft.Bot.Builder.Azure.Tests
         }
 
         // NOTE: THESE TESTS REQUIRE THAT THE COSMOS DB EMULATOR IS INSTALLED AND STARTED !!!!!!!!!!!!!!!!!
-        [TestMethod]
+        [Fact]
         public async Task DeleteObjectTest()
         {
             if (CheckEmulator())
@@ -216,7 +216,7 @@ namespace Microsoft.Bot.Builder.Azure.Tests
         }
 
         // NOTE: THESE TESTS REQUIRE THAT THE COSMOS DB EMULATOR IS INSTALLED AND STARTED !!!!!!!!!!!!!!!!!
-        [TestMethod]
+        [Fact]
         public async Task DeleteUnknownObjectTest()
         {
             if (CheckEmulator())
@@ -226,7 +226,7 @@ namespace Microsoft.Bot.Builder.Azure.Tests
         }
 
         // NOTE: THESE TESTS REQUIRE THAT THE COSMOS DB EMULATOR IS INSTALLED AND STARTED !!!!!!!!!!!!!!!!!
-        [TestMethod]
+        [Fact]
         public async Task HandleCrazyKeys()
         {
             if (CheckEmulator())
@@ -236,39 +236,39 @@ namespace Microsoft.Bot.Builder.Azure.Tests
         }
 
         // NOTE: THESE TESTS REQUIRE THAT THE COSMOS DB EMULATOR IS INSTALLED AND STARTED !!!!!!!!!!!!!!!!!
-        [TestMethod]
+        [Fact]
         public async Task ReadingEmptyKeysReturnsEmptyDictionary()
         {
             if (CheckEmulator())
             {
                 var state = await _storage.ReadAsync(new string[] { });
                 Assert.IsInstanceOfType(state, typeof(Dictionary<string, object>));
-                Assert.AreEqual(state.Count, 0);
+                Assert.Equal(state.Count, 0);
             }
         }
 
         // NOTE: THESE TESTS REQUIRE THAT THE COSMOS DB EMULATOR IS INSTALLED AND STARTED !!!!!!!!!!!!!!!!!
-        [TestMethod]
+        [Fact]
         public async Task ReadingNullKeysThrowException()
         {
             if (CheckEmulator())
             {
-                await Assert.ThrowsExceptionAsync<ArgumentNullException>(async () => await _storage.ReadAsync(null));
+                await Assert.ThrowsAsync<ArgumentNullException>(async () => await _storage.ReadAsync(null));
             }
         }
 
         // NOTE: THESE TESTS REQUIRE THAT THE COSMOS DB EMULATOR IS INSTALLED AND STARTED !!!!!!!!!!!!!!!!!
-        [TestMethod]
+        [Fact]
         public async Task WritingNullStoreItemsThrowException()
         {
             if (CheckEmulator())
             {
-                await Assert.ThrowsExceptionAsync<ArgumentNullException>(async () => await _storage.WriteAsync(null));
+                await Assert.ThrowsAsync<ArgumentNullException>(async () => await _storage.WriteAsync(null));
             }
         }
 
         // NOTE: THESE TESTS REQUIRE THAT THE COSMOS DB EMULATOR IS INSTALLED AND STARTED !!!!!!!!!!!!!!!!!
-        [TestMethod]
+        [Fact]
         public async Task WritingNoStoreItemsDoesntThrow()
         {
             if (CheckEmulator())
@@ -288,7 +288,7 @@ namespace Microsoft.Bot.Builder.Azure.Tests
         // The problem was reintroduced when the prompt retry count feature was implemented:
         // https://github.com/microsoft/botbuilder-dotnet/issues/1859
         // The waterfall in this test has been modified to include a prompt.
-        [TestMethod]
+        [Fact]
         public async Task WaterfallCosmos()
         {
             if (CheckEmulator())
@@ -321,18 +321,18 @@ namespace Microsoft.Bot.Builder.Azure.Tests
                     {
                         async (stepContext, ct) =>
                         {
-                            Assert.AreEqual(stepContext.ActiveDialog.State["stepIndex"].GetType(), typeof(int));
+                            Assert.Equal(stepContext.ActiveDialog.State["stepIndex"].GetType(), typeof(int));
                             await stepContext.Context.SendActivityAsync("step1");
                             return Dialog.EndOfTurn;
                         },
                         async (stepContext, ct) =>
                         {
-                            Assert.AreEqual(stepContext.ActiveDialog.State["stepIndex"].GetType(), typeof(int));
+                            Assert.Equal(stepContext.ActiveDialog.State["stepIndex"].GetType(), typeof(int));
                             return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions { Prompt = MessageFactory.Text("Please type your name.") }, ct);
                         },
                         async (stepContext, ct) =>
                         {
-                            Assert.AreEqual(stepContext.ActiveDialog.State["stepIndex"].GetType(), typeof(int));
+                            Assert.Equal(stepContext.ActiveDialog.State["stepIndex"].GetType(), typeof(int));
                             await stepContext.Context.SendActivityAsync("step3");
                             return Dialog.EndOfTurn;
                         },
@@ -376,7 +376,7 @@ namespace Microsoft.Bot.Builder.Azure.Tests
 
             if (Debugger.IsAttached)
             {
-                Assert.IsTrue(_hasEmulator.Value, _noEmulatorMessage);
+                Assert.True(_hasEmulator.Value, _noEmulatorMessage);
             }
 
             return _hasEmulator.Value;
