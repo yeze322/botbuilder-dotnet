@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <Content Include="**/*.dialog" />
+    <Content Include="**/*.lg" />
+    <Content Include="**/*.lu" />
+    <Content Include="**/*.schema" />
+    <Content Include="**/*.qna" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <None Remove="Schemas\Microsoft.OnAddToCollectionProperty.schema" />
+    <None Remove="Schemas\Microsoft.OnCancelForm.schema" />
+    <None Remove="Schemas\Microsoft.OnClearForm.schema" />
+    <None Remove="Schemas\Microsoft.OnClearProperty.schema" />
+    <None Remove="Schemas\Microsoft.OnMissingProperty.schema" />
+    <None Remove="Schemas\Microsoft.OnSubmitForm.schema" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AsyncUsageAnalyzers" Version="1.0.0-alpha003" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.Bot.Builder.Dialogs.Adaptive" Condition=" '$(IsBuildServer)' == '' " Version="$(LocalPackageVersion)" />
+    <PackageReference Include="Microsoft.Bot.Builder.Dialogs.Adaptive" Condition=" '$(IsBuildServer)' != '' " Version="$(ReleasePackageVersion)" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.Bot.Builder.Dialogs.Adaptive\Microsoft.Bot.Builder.Dialogs.Adaptive.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -495,7 +495,7 @@ namespace Microsoft.Bot.Builder.Dialogs.Declarative.Resources
         private T Load<T>(JToken token, SourceContext sourceContext)
         {
             var converters = new List<JsonConverter>();
-            
+
             // get converters
             foreach (var component in ComponentRegistration.Components.OfType<IComponentDeclarativeTypes>())
             {

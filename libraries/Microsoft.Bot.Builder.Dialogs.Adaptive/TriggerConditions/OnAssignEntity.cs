@@ -14,7 +14,7 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Conditions
     {
         [JsonProperty("$kind")]
         public new const string Kind = "Microsoft.OnAssignEntity";
-        
+
         [JsonConstructor]
         public OnAssignEntity(string property = null, string entity = null, string operation = null, List<Dialog> actions = null, string condition = null, [CallerFilePath] string callerPath = "", [CallerLineNumber] int callerLine = 0)
             : base(
@@ -51,7 +51,7 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Conditions
         public string Operation { get; set; }
 
         public override string GetIdentity()
-            => $"{this.GetType().Name}({this.Property}, {this.Entity})";
+            => $"{this.GetType().Name}({this.Operation}:{this.Property} {Entity})";
 
         public override Expression GetExpression()
         {
