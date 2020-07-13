@@ -47,7 +47,7 @@ namespace Microsoft.Bot.Builder.Dialogs
 
             // Store delivery mode and connection name in dialog state for later use.
             dc.ActiveDialog.State[DeliverModeStateKey] = dialogArgs.Activity.DeliveryMode;
-            
+
             // Send the activity to the skill.
             var eocActivity = await SendToSkillAsync(dc, skillActivity, cancellationToken).ConfigureAwait(false);
             if (eocActivity != null)
@@ -81,12 +81,12 @@ namespace Microsoft.Bot.Builder.Dialogs
                 {
                     return await OnEndOfConversationAsync(dc, eocActivity, cancellationToken).ConfigureAwait(false);
                 }
-
             }
             else if (activity.Type == ActivityTypes.Event)
             {
                 await dc.EmitEventAsync(activity.Name, activity.Value, true, false, cancellationToken).ConfigureAwait(false);
             }
+
             return EndOfTurn;
         }
 
@@ -145,6 +145,15 @@ namespace Microsoft.Bot.Builder.Dialogs
         {
             return activity.Type == ActivityTypes.Message;
         }
+
+        /// <summary>
+        /// Override to handle EndOfConversation Activities.
+        /// </summary>
+        /// <param name="dc">The <see cref="DialogContext"/> for the current turn of conversation.</param>
+        /// <param name="eocActivity">The <see cref="Activity"/> for the current turn of conversation.</param>
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects
+        /// or threads to receive notice of cancellation.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         protected virtual async Task<DialogTurnResult> OnEndOfConversationAsync(DialogContext dc, Activity eocActivity, CancellationToken cancellationToken = default)
         {
             return await dc.EndDialogAsync(eocActivity.Value, cancellationToken).ConfigureAwait(false);
@@ -153,7 +162,7 @@ namespace Microsoft.Bot.Builder.Dialogs
         /// <summary>
         /// Validates the required properties are set in the options argument passed to the BeginDialog call.
         /// </summary>
-        private BeginSkillDialogOptions ValidateBeginDialogArgs(object options)
+        private static BeginSkillDialogOptions ValidateBeginDialogArgs(object options)
         {
             if (options == null)
             {
@@ -274,9 +283,9 @@ namespace Microsoft.Bot.Builder.Dialogs
                             return await SendTokenExchangeInvokeToSkillAsync(activity, oauthCard.TokenExchangeResource.Id, oauthCard.ConnectionName, result.Token, cancellationToken).ConfigureAwait(false);
                         }
                     }
-
+#pragma warning disable CA1031 // Do not catch general exception types (ignoring, see comment below)
                     catch
-
+#pragma warning restore CA1031 // Do not catch general exception types
                     {
                         // Failures in token exchange are not fatal. They simply mean that the user needs to be shown the OAuth card.
                         return false;
@@ -306,7 +315,7 @@ namespace Microsoft.Bot.Builder.Dialogs
             // Check response status: true if success, false if failure
             return response.IsSuccessStatusCode();
         }
-        
+
         private async Task<string> CreateSkillConversationIdAsync(ITurnContext context, Activity activity, CancellationToken cancellationToken)
         {
             // Create a conversationId to interact with the skill and send the activity
