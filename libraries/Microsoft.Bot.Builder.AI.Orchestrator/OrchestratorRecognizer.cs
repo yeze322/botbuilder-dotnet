@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -20,7 +23,7 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
     public class OrchestratorRecognizer : Recognizer
     {
         [JsonProperty("$kind")]
-        public const string DeclarativeType = "Microsoft.Bot.Builder.AI.OrchestratorRecognizer";
+        public const string Kind = "Microsoft.OrchestratorRecognizer";
 
         /// <summary>
         /// Intent name that will be produced by this recognizer if the child recognizers do not have consensus for intents.
@@ -97,7 +100,7 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
 #pragma warning disable SA1201 // Elements should appear in the correct order
         private static Microsoft.Orchestrator.Orchestrator orchestrator = null;
 #pragma warning restore SA1201 // Elements should appear in the correct order
-        private static ILabelResolver resolver = null;
+        private ILabelResolver resolver = null;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="OrchestratorRecognizer"/> class.
@@ -213,7 +216,7 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
             return recognizerResult;
         }
 
-        private RecognizerResult AddTopScoringIntent (IReadOnlyList<Result> result, ref RecognizerResult recognizerResult)
+        private RecognizerResult AddTopScoringIntent(IReadOnlyList<Result> result, ref RecognizerResult recognizerResult)
         {
             var topScoringIntent = result.First().label.name;
             if (!recognizerResult.Intents.ContainsKey(topScoringIntent))
@@ -321,7 +324,14 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
                 modelPath = Path.GetFullPath(PathUtils.NormalizePath(modelPath));
 
                 // Create Orchestrator 
-                orchestrator = new Microsoft.Orchestrator.Orchestrator(modelPath, compactEmbeddings);
+                try
+                {
+                    orchestrator = new Microsoft.Orchestrator.Orchestrator(modelPath, compactEmbeddings);
+                } 
+                catch (Exception ex)
+                {
+                    throw new Exception("Failed to find or load Model", ex);
+                }
             }
 
             if (resolver == null)
