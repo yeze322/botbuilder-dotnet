@@ -46,8 +46,8 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
         /// <value>
         /// Model path.
         /// </value>
-        [JsonProperty("Model")]
-        public StringExpression Model { get; set; }
+        [JsonProperty("modelPath")]
+        public StringExpression ModelPath { get; set; }
 
         /// <summary>
         /// Gets or sets the full path to the snapshot to use.
@@ -55,8 +55,8 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
         /// <value>
         /// Snapshot path.
         /// </value>
-        [JsonProperty("Model")]
-        public StringExpression Snapshot { get; set; }
+        [JsonProperty("snapshotPath")]
+        public StringExpression SnapshotPath { get; set; }
 
         /// <summary>
         /// Gets or sets if compact embeddings should be used.
@@ -64,6 +64,7 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
         /// <value>
         /// Boolean flag to signal if compact embeddings should be used.
         /// </value>
+        [JsonProperty("useCompactEmbeddings")]
         public BoolExpression UseCompactEmbeddings { get; set; } = true;
 
         /// <summary>
@@ -81,6 +82,7 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
         /// <value>
         /// Recognizer returns ChooseIntent (disambiguation) if other intents are classified within this score of the top scoring intent.
         /// </value>
+        [JsonProperty("disambiguationScoreThreshold")]
         public NumberExpression DisambiguationScoreThreshold { get; set; } = 0.05F;
 
         /// <summary>
@@ -89,6 +91,7 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
         /// <value>
         /// When true, recognizer will look for ambiguous intents (intents with close recognition scores from top scoring intent).
         /// </value>
+        [JsonProperty("detectAmbiguousIntents")]
         public BoolExpression DetectAmbiguousIntents { get; set; } = false;
 
 #pragma warning disable SA1201 // Elements should appear in the correct order
@@ -110,22 +113,22 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
         /// <summary>
         /// Initializes a new instance of the <see cref="OrchestratorRecognizer"/> class.
         /// </summary>
-        /// <param name="model">Path to model file.</param>
-        /// <param name="snapshot">Path to snapshot.</param>
-        public OrchestratorRecognizer(string model, string snapshot)
+        /// <param name="modelPath">Path to model file.</param>
+        /// <param name="snapshotPath">Path to snapshot.</param>
+        public OrchestratorRecognizer(string modelPath, string snapshotPath)
         {
-            if (model == null)
+            if (modelPath == null)
             {
-                throw new ArgumentNullException($"Missing `Model` information.");
+                throw new ArgumentNullException($"Missing `ModelPath` information.");
             }
 
-            if (snapshot == null)
+            if (snapshotPath == null)
             {
-                throw new ArgumentNullException($"Missing `Snapshot` information.");
+                throw new ArgumentNullException($"Missing `SnapshotPath` information.");
             }
 
-            Model = model;
-            Snapshot = snapshot;
+            ModelPath = modelPath;
+            SnapshotPath = snapshotPath;
         }
 
         /// <summary>
@@ -297,14 +300,14 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
 
         private void InitializeModel(DialogContext dc)
         {
-            if (Model == null)
+            if (ModelPath == null)
             {
-                throw new ArgumentNullException($"Missing `Model` information.");
+                throw new ArgumentNullException($"Missing `ModelPath` information.");
             }
 
-            if (Snapshot == null)
+            if (SnapshotPath == null)
             {
-                throw new ArgumentNullException($"Missing `Shapshot` information.");
+                throw new ArgumentNullException($"Missing `ShapshotPath` information.");
             }
 
             var compactEmbeddings = UseCompactEmbeddings.GetValue(dc.State);
@@ -313,7 +316,7 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
 
             if (orchestrator == null)
             {
-                modelPath = Model.GetValue(dc.State);
+                modelPath = this.ModelPath.GetValue(dc.State);
 
                 modelPath = Path.GetFullPath(PathUtils.NormalizePath(modelPath));
 
@@ -323,7 +326,7 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
 
             if (resolver == null)
             {
-                snapShotPath = Snapshot.GetValue(dc.State);
+                snapShotPath = this.SnapshotPath.GetValue(dc.State);
 
                 snapShotPath = Path.GetFullPath(PathUtils.NormalizePath(snapShotPath));
 
