@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using AdaptiveExpressions.Properties;
@@ -19,6 +21,24 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
     {
         [JsonProperty("$kind")]
         public const string DeclarativeType = "Microsoft.Bot.Builder.AI.OrchestratorRecognizer";
+
+        /// <summary>
+        /// Intent name that will be produced by this recognizer if the child recognizers do not have consensus for intents.
+        /// </summary>
+        private const string ChooseIntent = "ChooseIntent";
+
+        /// <summary>
+        /// Property name for candidate intents that meet the ambiguity threshold.
+        /// </summary>
+        private const string CandidatesCollection = "candidates";
+
+        /// <summary>
+        /// Standard none intent that means none of the recognizers recognize the intent.
+        /// </summary>
+        /// <remarks>
+        /// If each recognizer returns no intents or None intents, then this recognizer will return None intent.
+        /// </remarks>
+        private const string NoneIntent = "None";
 
         /// <summary>
         /// Gets or sets the full path to the NLR model to use.
@@ -79,8 +99,33 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
         /// <summary>
         /// Initializes a new instance of the <see cref="OrchestratorRecognizer"/> class.
         /// </summary>
-        public OrchestratorRecognizer()
+        /// <param name="callerLine">caller line.</param>
+        /// <param name="callerPath">caller path.</param>
+        [JsonConstructor]
+        public OrchestratorRecognizer([CallerFilePath] string callerPath = "", [CallerLineNumber] int callerLine = 0)
+            : base(callerPath, callerLine)
         {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="OrchestratorRecognizer"/> class.
+        /// </summary>
+        /// <param name="model">Path to model file.</param>
+        /// <param name="snapshot">Path to snapshot.</param>
+        public OrchestratorRecognizer(string model, string snapshot)
+        {
+            if (model == null)
+            {
+                throw new ArgumentNullException($"Missing `Model` information.");
+            }
+
+            if (snapshot == null)
+            {
+                throw new ArgumentNullException($"Missing `Snapshot` information.");
+            }
+
+            Model = model;
+            Snapshot = snapshot;
         }
 
         /// <summary>
@@ -114,36 +159,68 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
                 }
 
                 // Score with orchestrator
-                var result = resolver.Score(text);
+                IReadOnlyList<Result> result = resolver.Score(text);
 
                 // Disambiguate if configured
                 if (detectAmbiguity == true)
                 {
-                    // TODO: walkthrough and find all intents that meet the threshold
+                    double topScore = result.First().score;
+                    float thresholdScore = DisambiguationScoreThreshold.GetValue(dialogContext.State);
+                    double classifyingScore = Math.Round(topScore, 2) - Math.Round(thresholdScore, 2);
+                    IEnumerable<Result> ambiguousIntents = result.Where(item => item.score >= classifyingScore);
+
+                    if (ambiguousIntents.Count() >= 1)
+                    {
+                        // Add ambiguous intents that meet the threshold as candidates.
+                        List<JObject> candidates = new List<JObject>();
+                        foreach (Result ambiguousIntent in ambiguousIntents)
+                        {
+                            dynamic candidate = new JObject();
+                            candidate.intent = ambiguousIntent.label.name;
+                            candidate.score = ambiguousIntent.score;
+                            candidate.closestText = ambiguousIntent.closest_text;
+                            candidates.Add(candidate);
+                        }
+
+                        recognizerResult.Intents.Add(ChooseIntent, new IntentScore() { Score = 1.0 });
+                        recognizerResult.Properties = new Dictionary<string, object>() { { CandidatesCollection, candidates } };
+                    } 
+                    else
+                    {
+                        AddTopScoringIntent(result, ref recognizerResult);
+                    }
                 }
                 else
                 {
-                    var topScoringIntent = result.First().label.name;
-                    if (!recognizerResult.Intents.ContainsKey(topScoringIntent))
-                    {
-                        recognizerResult.Intents.Add(topScoringIntent, new IntentScore()
-                        {
-                            Score = 1.0
-                        });
-                    }
+                    AddTopScoringIntent(result, ref recognizerResult);
                 }
             }
 
             // if no match return None intent
             if (!recognizerResult.Intents.Keys.Any())
             {
-                recognizerResult.Intents.Add("None", new IntentScore() { Score = 1.0 });
+                recognizerResult.Intents.Add(NoneIntent, new IntentScore() { Score = 1.0 });
             }
 
             TurnContext tempTurnContext = new TurnContext(dialogContext.Context.Adapter, activity);
             await tempTurnContext.TraceActivityAsync(nameof(OrchestratorRecognizer), JObject.FromObject(recognizerResult), nameof(OrchestratorRecognizer), "Orchestrator Recognition ", cancellationToken).ConfigureAwait(false);
 
-            // TODO: Add instrumentation
+            TrackRecognizerResult(dialogContext, nameof(OrchestratorRecognizer), FillRecognizerResultTelemetryProperties(recognizerResult, telemetryProperties), telemetryMetrics);
+
+            return recognizerResult;
+        }
+
+        private RecognizerResult AddTopScoringIntent (IReadOnlyList<Result> result, ref RecognizerResult recognizerResult)
+        {
+            var topScoringIntent = result.First().label.name;
+            if (!recognizerResult.Intents.ContainsKey(topScoringIntent))
+            {
+                recognizerResult.Intents.Add(topScoringIntent, new IntentScore()
+                {
+                    Score = 1.0
+                });
+            }
+
             return recognizerResult;
         }
 
@@ -151,7 +228,7 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
         {
             var text = activity.Text ?? string.Empty;
             var entityPool = new List<Entity>();
-            if (this.EntityRecognizers != null)
+            if (EntityRecognizers != null)
             {
                 // add entities from regexrecgonizer to the entities pool
                 var textEntity = new TextEntity(text);
@@ -251,9 +328,8 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
                 snapShotPath = Path.GetFullPath(PathUtils.NormalizePath(snapShotPath));
 
                 // Load the snapshot
-
-                // Convert to byte array
-                IReadOnlyList<byte> snapShotByteArray = null;
+                string content = File.ReadAllText(snapShotPath);
+                byte[] snapShotByteArray = Encoding.UTF8.GetBytes(content);
 
                 // Load shapshot and create resolver
                 resolver = orchestrator.CreateLabelResolver(snapShotByteArray, compactEmbeddings);
