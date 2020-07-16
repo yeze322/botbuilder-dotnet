@@ -11,6 +11,7 @@ using Microsoft.Bot.Builder.Dialogs.Adaptive.Actions;
 using Microsoft.Bot.Builder.Dialogs.Adaptive.Conditions;
 using Microsoft.Bot.Builder.Dialogs.Adaptive.Generators;
 using Microsoft.Bot.Builder.Dialogs.Adaptive.Input;
+using Microsoft.Bot.Builder.Dialogs.Adaptive.Recognizers;
 using Microsoft.Bot.Builder.Dialogs.Adaptive.Templates;
 using Microsoft.Bot.Builder.LanguageGeneration;
 using Microsoft.Extensions.Configuration;
@@ -43,40 +44,40 @@ namespace Microsoft.BotBuilderSamples
                     },
 
                     // Intent rules for the LUIS model. Each intent here corresponds to an intent defined in ./RootDialog.lu file
-                    new OnIntent("Greeting")         
-                    { 
-                        Actions = new List<Dialog>() 
-                        { 
-                            new SendActivity("${HelpRootDialog()}") 
-                        } 
+                    new OnIntent("Greeting")
+                    {
+                        Actions = new List<Dialog>()
+                        {
+                            new SendActivity("${HelpRootDialog()}")
+                        }
                     },
-                    new OnIntent("AddItem")    
+                    new OnIntent("AddItem")
                     { 
                         // LUIS returns a confidence score with intent classification. 
                         // Conditions are expressions. 
                         // This expression ensures that this trigger only fires if the confidence score for the 
                         // AddToDoDialog intent classification is at least 0.7
                         Condition = "#AddItem.Score >= 0.5",
-                        Actions = new List<Dialog>() 
-                        { 
-                            new BeginDialog(nameof(AddToDoDialog)) 
-                        } 
+                        Actions = new List<Dialog>()
+                        {
+                            new BeginDialog(nameof(AddToDoDialog))
+                        }
                     },
-                    new OnIntent("DeleteItem") 
-                    { 
+                    new OnIntent("DeleteItem")
+                    {
                         Condition = "#DeleteItem.Score >= 0.5",
-                        Actions = new List<Dialog>() 
-                        { 
-                            new BeginDialog(nameof(DeleteToDoDialog)) 
-                        } 
+                        Actions = new List<Dialog>()
+                        {
+                            new BeginDialog(nameof(DeleteToDoDialog))
+                        }
                     },
-                    new OnIntent("ViewItem")   
-                    { 
+                    new OnIntent("ViewItem")
+                    {
                         Condition = "#ViewItem.Score >= 0.5",
-                        Actions = new List<Dialog>() 
-                        { 
-                            new BeginDialog(nameof(ViewToDoDialog)) 
-                        } 
+                        Actions = new List<Dialog>()
+                        {
+                            new BeginDialog(nameof(ViewToDoDialog))
+                        }
                     },
                     new OnIntent("GetUserProfile")
                     {
@@ -88,13 +89,49 @@ namespace Microsoft.BotBuilderSamples
                     },
 
                     // Come back with LG template based readback for global help
-                    new OnIntent("Help")             
-                    { 
+                    new OnIntent("Help")
+                    {
                         Condition = "#Help.Score >= 0.8",
-                        Actions = new List<Dialog>() 
-                        { 
-                            new SendActivity("${HelpRootDialog()}") 
-                        } 
+                        Actions = new List<Dialog>()
+                        {
+                            new SendActivity("${HelpRootDialog()}"),
+                        }
+                    },
+
+                    new OnChooseIntent()
+                    {
+                        Actions = new List<Dialog>()
+                        {
+                            new SendActivity("Ambiguous!"),
+                            new SetProperty()
+                            {
+                                Value = "=turn.recognized.candidates",
+                                Property = "dialog.disambigCandidates"
+                            },
+                            new TextInput()
+                            {
+                                Property = "turn.disambigChoice",
+                                Prompt = new ActivityTemplate("${DisambigIntents()}"),
+                                AllowInterruptions = false
+                            },
+                            new IfCondition()
+                            {
+                                Condition = "turn.disambigChoice != 'None'",
+                                Actions = new List<Dialog>()
+                                {
+                                    new EmitEvent()
+                                    {
+                                        EventName = AdaptiveEvents.RecognizedIntent,
+                                        EventValue = "=dialog.disambigCandidates[turn.disambigChoice].result",
+                                        BubbleEvent = true
+                                    }
+                                },
+                                ElseActions = new List<Dialog>()
+                                {
+                                    new SendActivity("${NoDisambigReadBack()}")
+                                }
+                            }
+                        }
                     },
                     new OnIntent("Cancel")           
                     { 
@@ -161,6 +198,14 @@ namespace Microsoft.BotBuilderSamples
             {
                 ModelPath = configuration["orchestrator:ModelPath"],
                 SnapshotPath = configuration["orchestrator:SnapShotPaths:RootDialog"],
+
+                //EntityRecognizers = new List<EntityRecognizer>()
+                //{
+                //    new NumberEntityRecognizer(),
+                //    new OrdinalEntityRecognizer()
+                //},
+                DetectAmbiguousIntents = true,
+                DisambiguationScoreThreshold = 0.10F
             };
         }
 

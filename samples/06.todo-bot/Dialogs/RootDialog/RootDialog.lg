@@ -34,3 +34,12 @@
 
 # CancelCancelled
 - No worries!
+
+# DisambigIntents
+[Activity
+    Text = Pick one .. 
+    SuggestedActions = ${foreach(dialog.disambigCandidates, x, x.key)}
+]
+
+# NoDisambigReadBack
+- No worries. 
