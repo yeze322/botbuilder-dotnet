@@ -44,6 +44,46 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
         /// </remarks>
         private const string NoneIntent = "None";
 
+        private static Microsoft.Orchestrator.Orchestrator orchestrator = null;
+        private static string modelPath = null;
+        private ILabelResolver resolver = null;
+        private string snapshotPath = null;
+        private bool useCompactEmbeddings = true;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="OrchestratorRecognizer"/> class.
+        /// </summary>
+        /// <param name="modelPath">Path to model file.</param>
+        /// <param name="snapshotPath">Path to snapshot.</param>
+        public OrchestratorRecognizer(string modelPath, string snapshotPath)
+        {
+            if (modelPath == null)
+            {
+                throw new ArgumentNullException($"Missing `ModelPath` information.");
+            }
+
+            if (snapshotPath == null)
+            {
+                throw new ArgumentNullException($"Missing `SnapshotPath` information.");
+            }
+
+            OrchestratorRecognizer.modelPath = modelPath;
+            this.snapshotPath = snapshotPath;
+
+            InitializeModel();
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="OrchestratorRecognizer"/> class.
+        /// </summary>
+        /// <param name="callerLine">caller line.</param>
+        /// <param name="callerPath">caller path.</param>
+        [JsonConstructor]
+        public OrchestratorRecognizer([CallerFilePath] string callerPath = "", [CallerLineNumber] int callerLine = 0)
+            : base(callerPath, callerLine)
+        {
+        }
+
         /// <summary>
         /// Gets or sets the full path to the NLR model to use.
         /// </summary>
@@ -98,43 +138,6 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
         [JsonProperty("detectAmbiguousIntents")]
         public BoolExpression DetectAmbiguousIntents { get; set; } = false;
 
-#pragma warning disable SA1201 // Elements should appear in the correct order
-        private static Microsoft.Orchestrator.Orchestrator orchestrator = null;
-#pragma warning restore SA1201 // Elements should appear in the correct order
-        private ILabelResolver resolver = null;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="OrchestratorRecognizer"/> class.
-        /// </summary>
-        /// <param name="callerLine">caller line.</param>
-        /// <param name="callerPath">caller path.</param>
-        [JsonConstructor]
-        public OrchestratorRecognizer([CallerFilePath] string callerPath = "", [CallerLineNumber] int callerLine = 0)
-            : base(callerPath, callerLine)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="OrchestratorRecognizer"/> class.
-        /// </summary>
-        /// <param name="modelPath">Path to model file.</param>
-        /// <param name="snapshotPath">Path to snapshot.</param>
-        public OrchestratorRecognizer(string modelPath, string snapshotPath)
-        {
-            if (modelPath == null)
-            {
-                throw new ArgumentNullException($"Missing `ModelPath` information.");
-            }
-
-            if (snapshotPath == null)
-            {
-                throw new ArgumentNullException($"Missing `SnapshotPath` information.");
-            }
-
-            ModelPath = modelPath;
-            SnapshotPath = snapshotPath;
-        }
-
         /// <summary>
         /// Return results of the call to QnA Maker.
         /// </summary>
@@ -162,7 +165,11 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
                 return recognizerResult;
             }
 
-            InitializeModel(dialogContext);
+            modelPath = ModelPath.GetValue(dialogContext.State);
+            snapshotPath = SnapshotPath.GetValue(dialogContext.State);
+            useCompactEmbeddings = UseCompactEmbeddings.GetValue(dialogContext.State);
+
+            InitializeModel();
 
             if (resolver != null)
             {
@@ -173,7 +180,7 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
                 }
 
                 // Score with orchestrator
-                result = resolver.Score(text);
+                result = Score(text);
 
                 // Disambiguate if configured
                 if (detectAmbiguity == true)
@@ -231,6 +238,11 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
             TrackRecognizerResult(dialogContext, nameof(OrchestratorRecognizer), FillRecognizerResultTelemetryProperties(recognizerResult, telemetryProperties), telemetryMetrics);
 
             return recognizerResult;
+        }
+
+        public IReadOnlyList<Result> Score(string text)
+        {
+            return resolver.Score(text);
         }
 
         private RecognizerResult AddTopScoringIntent(IReadOnlyList<Result> result, ref RecognizerResult recognizerResult)
@@ -318,32 +330,26 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
             return recognizerResult;
         }
 
-        private void InitializeModel(DialogContext dc)
+        private void InitializeModel()
         {
-            if (ModelPath == null)
+            if (modelPath == null)
             {
                 throw new ArgumentNullException($"Missing `ModelPath` information.");
             }
 
-            if (SnapshotPath == null)
+            if (snapshotPath == null)
             {
                 throw new ArgumentNullException($"Missing `ShapshotPath` information.");
             }
 
-            var compactEmbeddings = UseCompactEmbeddings.GetValue(dc.State);
-            string modelPath = null;
-            string snapShotPath = null;
-
             if (orchestrator == null)
             {
-                modelPath = this.ModelPath.GetValue(dc.State);
-
-                modelPath = Path.GetFullPath(PathUtils.NormalizePath(modelPath));
+                var fullModelPath = Path.GetFullPath(PathUtils.NormalizePath(modelPath));
 
                 // Create Orchestrator 
                 try
                 {
-                    orchestrator = new Microsoft.Orchestrator.Orchestrator(modelPath, compactEmbeddings);
+                    orchestrator = new Microsoft.Orchestrator.Orchestrator(fullModelPath, useCompactEmbeddings);
                 } 
                 catch (Exception ex)
                 {
@@ -353,16 +359,14 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
 
             if (resolver == null)
             {
-                snapShotPath = this.SnapshotPath.GetValue(dc.State);
-
-                snapShotPath = Path.GetFullPath(PathUtils.NormalizePath(snapShotPath));
+                var fullSnapShotPath = Path.GetFullPath(PathUtils.NormalizePath(snapshotPath));
 
                 // Load the snapshot
-                string content = File.ReadAllText(snapShotPath);
+                string content = File.ReadAllText(fullSnapShotPath);
                 byte[] snapShotByteArray = Encoding.UTF8.GetBytes(content);
 
                 // Load shapshot and create resolver
-                resolver = orchestrator.CreateLabelResolver(snapShotByteArray, compactEmbeddings);
+                resolver = orchestrator.CreateLabelResolver(snapShotByteArray, useCompactEmbeddings);
             }
         }
     }
