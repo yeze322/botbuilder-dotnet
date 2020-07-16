@@ -1,0 +1,16 @@
+{
+    "$kind": "Microsoft.AdaptiveDialog",
+    "triggers": [
+        {
+            "$kind": "Microsoft.OnConversationUpdateActivity",
+            "actions": [
+                {
+                    "$kind": "Microsoft.SetProperty",
+                    "property": "uesr.name",
+                    "value": "Human"
+                }
+                
+            ]
+        }
+    ]
+}
