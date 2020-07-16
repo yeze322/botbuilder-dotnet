@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -146,7 +147,8 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
         public override async Task<RecognizerResult> RecognizeAsync(DialogContext dialogContext, Activity activity, CancellationToken cancellationToken, Dictionary<string, string> telemetryProperties = null, Dictionary<string, double> telemetryMetrics = null)
         {
             var text = activity.Text ?? string.Empty;
-            var detectAmbiguity = DetectAmbiguousIntents.GetValue(dialogContext.State); 
+            var detectAmbiguity = DetectAmbiguousIntents.GetValue(dialogContext.State);
+            IReadOnlyList<Result> result = null;
 
             var recognizerResult = new RecognizerResult()
             {
@@ -154,18 +156,24 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
                 Intents = new Dictionary<string, IntentScore>(),
             };
 
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                // nothing to recognize, return empty recognizerResult
+                return recognizerResult;
+            }
+
             InitializeModel(dialogContext);
 
             if (resolver != null)
             {
-                if (EntityRecognizers != null)
+                if (EntityRecognizers.Count != 0)
                 {
                     // Run entity recognition
                     recognizerResult = await RecognizeEntitiesAsync(dialogContext, activity, recognizerResult).ConfigureAwait(false);
                 }
 
                 // Score with orchestrator
-                IReadOnlyList<Result> result = resolver.Score(text);
+                result = resolver.Score(text);
 
                 // Disambiguate if configured
                 if (detectAmbiguity == true)
@@ -178,14 +186,22 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
                     if (ambiguousIntents.Count() >= 1)
                     {
                         // Add ambiguous intents that meet the threshold as candidates.
-                        List<JObject> candidates = new List<JObject>();
+                        JObject candidates = new JObject();
                         foreach (Result ambiguousIntent in ambiguousIntents)
                         {
-                            dynamic candidate = new JObject();
-                            candidate.intent = ambiguousIntent.label.name;
-                            candidate.score = ambiguousIntent.score;
-                            candidate.closestText = ambiguousIntent.closest_text;
-                            candidates.Add(candidate);
+                            JObject candidate = new JObject();
+                            candidate.Add("intent", ambiguousIntent.label.name);
+                            candidate.Add("score", ambiguousIntent.score);
+                            candidate.Add("closestText", ambiguousIntent.closest_text);
+                            var recoResult = new RecognizerResult();
+                            recoResult.Intents.Add(ambiguousIntent.label.name, new IntentScore()
+                            {
+                                Score = ambiguousIntent.score
+                            });
+                            recoResult.Entities = recognizerResult.Entities;
+                            recoResult.Text = recognizerResult.Text;
+                            candidate.Add("result", JObject.FromObject(recoResult));
+                            candidates.Add(ambiguousIntent.label.name, candidate);
                         }
 
                         recognizerResult.Intents.Add(ChooseIntent, new IntentScore() { Score = 1.0 });
@@ -208,8 +224,9 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
                 recognizerResult.Intents.Add(NoneIntent, new IntentScore() { Score = 1.0 });
             }
 
-            TurnContext tempTurnContext = new TurnContext(dialogContext.Context.Adapter, activity);
-            await tempTurnContext.TraceActivityAsync(nameof(OrchestratorRecognizer), JObject.FromObject(recognizerResult), nameof(OrchestratorRecognizer), "Orchestrator Recognition ", cancellationToken).ConfigureAwait(false);
+            recognizerResult.Properties.Add("result", result);
+
+            await dialogContext.Context.TraceActivityAsync(nameof(OrchestratorRecognizer), JObject.FromObject(recognizerResult), nameof(OrchestratorRecognizer), "Orchestrator Recognition ", cancellationToken).ConfigureAwait(false);
 
             TrackRecognizerResult(dialogContext, nameof(OrchestratorRecognizer), FillRecognizerResultTelemetryProperties(recognizerResult, telemetryProperties), telemetryMetrics);
 
@@ -223,7 +240,7 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
             {
                 recognizerResult.Intents.Add(topScoringIntent, new IntentScore()
                 {
-                    Score = 1.0
+                    Score = result.First().score
                 });
             }
 
@@ -269,8 +286,8 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
                 }
 
                 // The Entity type names are not consistent, map everything to camelcase so we can process them cleaner.
-                dynamic entity = JObject.FromObject(entityResult);
-                ((JArray)values).Add(entity.text);
+                JObject entity = JObject.FromObject(entityResult);
+                ((JArray)values).Add(entity.GetValue("text"));
 
                 // get/create $instance
                 JToken instanceRoot;
@@ -288,13 +305,13 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
                     instanceRoot[entityResult.Type] = instanceData;
                 }
 
-                dynamic instance = new JObject();
-                instance.startIndex = entity.start;
-                instance.endIndex = entity.end;
-                instance.score = (double)1.0;
-                instance.text = entity.text;
-                instance.type = entity.type;
-                instance.resolution = entity.resolution;
+                JObject instance = new JObject();
+                instance.Add("startIndex", entity.GetValue("start"));
+                instance.Add("endIndex", entity.GetValue("end"));
+                instance.Add("score", (double)1.0);
+                instance.Add("text", entity.GetValue("text"));
+                instance.Add("type", entity.GetValue("type"));
+                instance.Add("resolution", entity.GetValue("resolution"));
                 ((JArray)instanceData).Add(instance);
             }
 
