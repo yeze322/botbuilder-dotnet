@@ -204,8 +204,8 @@ namespace Microsoft.BotBuilderSamples
                 //    new NumberEntityRecognizer(),
                 //    new OrdinalEntityRecognizer()
                 //},
-                DetectAmbiguousIntents = true,
-                DisambiguationScoreThreshold = 0.10F
+                // DetectAmbiguousIntents = true,
+                // DisambiguationScoreThreshold = 0.10F
             };
         }
 
