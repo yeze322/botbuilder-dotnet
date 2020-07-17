@@ -1,0 +1,24 @@
+﻿> !# @lineBreakStyle = markdown
+
+# exception
+- ${ErrorPrefix()}, ${ErrorSuffix()} \n Exception: ${ExceptionMessage()}
+
+# ErrorSuffix
+- it looks like something went wrong.
+- I seem to have run into a snag. We need to start over. 
+- something is not right. We need to start over. 
+
+# ErrorPrefix
+- Oops
+- Sorry
+- I apologize
+
+# ExceptionMessage
+- ```
+**Message** : ${Message}
+**Active Dialog** : ${Data["DialogContext"]["ActiveDialog"]}
+Active Dialog (Full) : ${join(foreach(Data, x, concat(x.key, ':', x.value)), ':::::\n')}
+```
+
+> Active Dialog : ${coalesce(Data.DialogContext.ActiveDialog, 'null')}
+> Stack : ${coalesce(join(Data.DialogContext.Stack, "->"), 'null')}
