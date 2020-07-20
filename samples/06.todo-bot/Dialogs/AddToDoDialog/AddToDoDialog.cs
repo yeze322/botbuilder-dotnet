@@ -74,7 +74,7 @@ namespace Microsoft.BotBuilderSamples
                                 Value = "=@itemTitle",
 
                                 // Allow interruption if we do not have an item title and have a super high confidence classification of an intent.
-                                AllowInterruptions = "!@itemTitle && turn.recognized.score >= 0.7"
+                                AllowInterruptions = "!@itemTitle"
                             },
 
                             // Get list type
@@ -83,7 +83,7 @@ namespace Microsoft.BotBuilderSamples
                                 Property = "dialog.listType",
                                 Prompt = new ActivityTemplate("${GetListType()}"),
                                 Value = "=@listType",
-                                AllowInterruptions = "!@listType && turn.recognized.score >= 0.7",
+                                AllowInterruptions = "!@listType",
                                 Validations = new List<BoolExpression>()
                                 {
                                     // Verify using expressions that the value is one of todo or shopping or grocery
