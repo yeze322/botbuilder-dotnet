@@ -41,6 +41,11 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
         /// </summary>
         private const string NoneIntent = "None";
 
+        /// <summary>
+        /// If the top scoring intent is lower than this score, we will return "None" intent.
+        /// </summary>
+        private const float UnknownIntentFilterScore = 0.40F;
+
         private static Microsoft.Orchestrator.Orchestrator orchestrator = null;
         private static string modelPath = null;
         private ILabelResolver resolver = null;
@@ -222,12 +227,6 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
                 }
             }
 
-            // if no match return None intent
-            if (!recognizerResult.Intents.Keys.Any())
-            {
-                recognizerResult.Intents.Add(NoneIntent, new IntentScore() { Score = 1.0 });
-            }
-
             recognizerResult.Properties.Add("result", result);
 
             await dialogContext.Context.TraceActivityAsync(nameof(OrchestratorRecognizer), JObject.FromObject(recognizerResult), nameof(OrchestratorRecognizer), "Orchestrator Recognition ", cancellationToken).ConfigureAwait(false);
@@ -245,12 +244,21 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
         private RecognizerResult AddTopScoringIntent(IReadOnlyList<Result> result, ref RecognizerResult recognizerResult)
         {
             var topScoringIntent = result.First().label.name;
-            if (!recognizerResult.Intents.ContainsKey(topScoringIntent))
+            var topScore = result.First().score;
+
+            // if top scoring intent is less than threshold, return None
+            if (topScore < UnknownIntentFilterScore)
             {
-                recognizerResult.Intents.Add(topScoringIntent, new IntentScore()
+                recognizerResult.Intents.Add(NoneIntent, new IntentScore() { Score = 1.0 });
+            } else
+            {
+                if (!recognizerResult.Intents.ContainsKey(topScoringIntent))
                 {
-                    Score = result.First().score
-                });
+                    recognizerResult.Intents.Add(topScoringIntent, new IntentScore()
+                    {
+                        Score = result.First().score
+                    });
+                }
             }
 
             return recognizerResult;
