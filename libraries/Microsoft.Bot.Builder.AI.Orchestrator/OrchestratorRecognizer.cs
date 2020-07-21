@@ -39,9 +39,6 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
         /// <summary>
         /// Standard none intent that means none of the recognizers recognize the intent.
         /// </summary>
-        /// <remarks>
-        /// If each recognizer returns no intents or None intents, then this recognizer will return None intent.
-        /// </remarks>
         private const string NoneIntent = "None";
 
         private static Microsoft.Orchestrator.Orchestrator orchestrator = null;
