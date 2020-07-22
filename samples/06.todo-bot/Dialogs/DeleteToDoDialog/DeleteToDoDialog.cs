@@ -165,7 +165,7 @@ namespace Microsoft.BotBuilderSamples
                 throw new Exception("Your RootDialog Orchestrator application is not configured. Please see README.MD to set it up.");
             }
 
-            return new OrchestratorRecognizer()
+            return new OrchestratorAdaptiveRecognizer()
             {
                 ModelPath = configuration["orchestrator:ModelPath"],
                 SnapshotPath = configuration["orchestrator:SnapShotPaths:DeleteToDoDialog"],
