@@ -1,26 +1,27 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Orchestrator;
 
 namespace Microsoft.Bot.Builder.AI.Orchestrator
 {
     public class OrchestratorRecognizer
     {
+        public const string ResultProperty = "Result";
+
         private const float UnknownIntentFilterScore = 0.4F;
         private const string NoneIntent = "None";
         private static Microsoft.Orchestrator.Orchestrator orchestrator = null;
         private static string modelPath = null;
         private string snapshotPath = null;
         private ILabelResolver resolver = null;
-        private bool useCompactEmbeddings = true;
 
-        public OrchestratorRecognizer(string modelPath, string snapshotPath, bool useCompactEmbeddings = true)
+        public OrchestratorRecognizer(string modelPath, string snapshotPath)
         {
             if (modelPath == null)
             {
@@ -34,7 +35,6 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
 
             OrchestratorRecognizer.modelPath = modelPath;
             this.snapshotPath = snapshotPath;
-            this.useCompactEmbeddings = useCompactEmbeddings;
             InitializeModel();
         }
 
@@ -42,9 +42,8 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
         /// Returns recognition results.
         /// </summary>
         /// <param name="turnContext">Turn context.</param>
-        /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>Analysis of utterance.</returns>
-        public RecognizerResult Recognize(ITurnContext turnContext, CancellationToken cancellationToken)
+        public RecognizerResult Recognize(ITurnContext turnContext)
         {
             var text = turnContext.Activity.Text ?? string.Empty;
             var recognizerResult = new RecognizerResult()
@@ -65,13 +64,16 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
             var result = resolver.Score(text);
             AddTopScoringIntent(result, ref recognizerResult);
 
+            // Add full recognition result as a 'result' property
+            recognizerResult.Properties.Add(ResultProperty, result);
+
             return recognizerResult;
         }
 
         private RecognizerResult AddTopScoringIntent(IReadOnlyList<Result> result, ref RecognizerResult recognizerResult)
         {
-            var topScoringIntent = result.First().label.name;
-            var topScore = result.First().score;
+            var topScoringIntent = result.First().Label.Name;
+            var topScore = result.First().Score;
 
             // if top scoring intent is less than threshold, return None
             if (topScore < UnknownIntentFilterScore)
@@ -84,7 +86,7 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
                 {
                     recognizerResult.Intents.Add(topScoringIntent, new IntentScore()
                     {
-                        Score = result.First().score
+                        Score = result.First().Score
                     });
                 }
             }
@@ -111,7 +113,7 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
                 // Create Orchestrator 
                 try
                 {
-                    orchestrator = new Microsoft.Orchestrator.Orchestrator(fullModelPath, useCompactEmbeddings);
+                    orchestrator = new Microsoft.Orchestrator.Orchestrator(fullModelPath);
                 }
                 catch (Exception ex)
                 {
@@ -128,7 +130,7 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
                 byte[] snapShotByteArray = Encoding.UTF8.GetBytes(content);
 
                 // Load shapshot and create resolver
-                resolver = orchestrator.CreateLabelResolver(snapShotByteArray, useCompactEmbeddings);
+                resolver = orchestrator.CreateLabelResolver(snapShotByteArray);
             }
         }
     }

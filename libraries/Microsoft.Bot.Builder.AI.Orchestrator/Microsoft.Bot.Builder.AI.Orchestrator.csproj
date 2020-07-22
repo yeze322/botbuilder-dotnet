@@ -47,7 +47,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Orchestrator" Version="0.0.7-preview-146946" />
+    <PackageReference Include="Microsoft.Orchestrator" Version="0.0.2-preview" />
   </ItemGroup>
 
   <ItemGroup>

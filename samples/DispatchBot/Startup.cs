@@ -31,7 +31,7 @@ namespace Microsoft.BotBuilderSamples
             // Create the Bot Framework Adapter with error handling enabled.
             services.AddSingleton<IBotFrameworkHttpAdapter, AdapterWithErrorHandler>();
 
-            services.AddSingleton<OrchestratorAdaptiveRecognizer>(InitializeOrchestrator());
+            services.AddSingleton<OrchestratorRecognizer>(InitializeOrchestrator());
 
             // Create the bot services (LUIS, QnA) as a singleton.
             services.AddSingleton<IBotServices, BotServices>();
@@ -59,11 +59,11 @@ namespace Microsoft.BotBuilderSamples
                 });
         }
 
-        private OrchestratorAdaptiveRecognizer InitializeOrchestrator()
+        private OrchestratorRecognizer InitializeOrchestrator()
         {
             string modelPath = Path.GetFullPath(OrchestratorConfig.ModelPath);
             string snapshotPath = Path.GetFullPath(OrchestratorConfig.SnapshotPath);
-            OrchestratorAdaptiveRecognizer orc = new OrchestratorAdaptiveRecognizer(modelPath, snapshotPath);
+            OrchestratorRecognizer orc = new OrchestratorRecognizer(modelPath, snapshotPath);
             return orc;
         }
     }

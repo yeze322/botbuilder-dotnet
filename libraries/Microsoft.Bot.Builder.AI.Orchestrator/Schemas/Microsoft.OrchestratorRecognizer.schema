@@ -22,16 +22,6 @@
             "description": "SnapShot file path.",
             "default": "settings.orchestrator.shapshotpath"
         },
-        "useCompactEmbeddings": {
-            "$ref": "schema:#/definitions/booleanExpression",
-            "title": "Use compact embeddings",
-            "description": "If true, compact embeddings will be used.",
-            "default": "true",
-            "examples": [
-                true,
-                "=turn.useCompactEmbeddings"
-            ]
-        },
         "entityRecognizers": {
             "type": "array",
             "items": {
@@ -46,7 +36,7 @@
             "description": "Recognizer returns ChooseIntent (disambiguation) if other intents are classified within this score of the top scoring intent.",
             "default": 0.05,
             "examples": [
-                true,
+                "true",
                 "=turn.scoreThreshold",
                 "=settings.orchestrator.disambigscorethreshold"
             ]
@@ -57,7 +47,7 @@
             "description": "If true, recognizer will look for ambiguous intents (intents with close recognition scores from top scoring intent).",
             "default": false,
             "examples": [
-                true,
+                "true",
                 "=turn.detectAmbiguousIntents",
                 "=settings.orchestrator.detectambiguousintents"
             ]

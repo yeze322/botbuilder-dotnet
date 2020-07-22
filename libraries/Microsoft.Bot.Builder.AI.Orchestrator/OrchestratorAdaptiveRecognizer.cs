@@ -3,11 +3,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices.ComTypes;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using AdaptiveExpressions.Properties;
@@ -46,34 +43,9 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
         /// </summary>
         private const float UnknownIntentFilterScore = 0.40F;
 
-        private static Microsoft.Orchestrator.Orchestrator orchestrator = null;
         private static string modelPath = null;
-        private ILabelResolver resolver = null;
         private string snapshotPath = null;
-        private bool useCompactEmbeddings = true;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="OrchestratorAdaptiveRecognizer"/> class.
-        /// </summary>
-        /// <param name="modelPath">Path to model file.</param>
-        /// <param name="snapshotPath">Path to snapshot.</param>
-        public OrchestratorAdaptiveRecognizer(string modelPath, string snapshotPath)
-        {
-            if (modelPath == null)
-            {
-                throw new ArgumentNullException($"Missing `ModelPath` information.");
-            }
-
-            if (snapshotPath == null)
-            {
-                throw new ArgumentNullException($"Missing `SnapshotPath` information.");
-            }
-
-            OrchestratorAdaptiveRecognizer.modelPath = modelPath;
-            this.snapshotPath = snapshotPath;
-
-            InitializeModel();
-        }
+        private OrchestratorRecognizer recognizer = null;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="OrchestratorAdaptiveRecognizer"/> class.
@@ -103,15 +75,6 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
         /// </value>
         [JsonProperty("snapshotPath")]
         public StringExpression SnapshotPath { get; set; }
-
-        /// <summary>
-        /// Gets or sets if compact embeddings should be used.
-        /// </summary>
-        /// <value>
-        /// Boolean flag to signal if compact embeddings should be used.
-        /// </value>
-        [JsonProperty("useCompactEmbeddings")]
-        public BoolExpression UseCompactEmbeddings { get; set; } = true;
 
         /// <summary>
         /// Gets or sets the entity recognizers.
@@ -153,114 +116,68 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
         {
             var text = activity.Text ?? string.Empty;
             var detectAmbiguity = DetectAmbiguousIntents.GetValue(dialogContext.State);
-            IReadOnlyList<Result> result = null;
-
-            var recognizerResult = new RecognizerResult()
-            {
-                Text = text,
-                Intents = new Dictionary<string, IntentScore>(),
-            };
-
-            if (string.IsNullOrWhiteSpace(text))
-            {
-                // nothing to recognize, return empty recognizerResult
-                return recognizerResult;
-            }
 
             modelPath = ModelPath.GetValue(dialogContext.State);
             snapshotPath = SnapshotPath.GetValue(dialogContext.State);
-            useCompactEmbeddings = UseCompactEmbeddings.GetValue(dialogContext.State);
 
             InitializeModel();
 
-            if (resolver != null)
+            var tempContext = new TurnContext(dialogContext.Context.Adapter, activity);
+            foreach (var keyValue in dialogContext.Context.TurnState)
             {
-                if (EntityRecognizers.Count != 0)
-                {
-                    // Run entity recognition
-                    recognizerResult = await RecognizeEntitiesAsync(dialogContext, activity, recognizerResult).ConfigureAwait(false);
-                }
-
-                // Score with orchestrator
-                result = Score(text);
-
-                // Disambiguate if configured
-                if (detectAmbiguity == true)
-                {
-                    double topScore = result.First().score;
-                    float thresholdScore = DisambiguationScoreThreshold.GetValue(dialogContext.State);
-                    double classifyingScore = Math.Round(topScore, 2) - Math.Round(thresholdScore, 2);
-                    IEnumerable<Result> ambiguousIntents = result.Where(item => item.score >= classifyingScore);
-
-                    if (ambiguousIntents.Count() >= 1)
-                    {
-                        // Add ambiguous intents that meet the threshold as candidates.
-                        JObject candidates = new JObject();
-                        foreach (Result ambiguousIntent in ambiguousIntents)
-                        {
-                            JObject candidate = new JObject();
-                            candidate.Add("intent", ambiguousIntent.label.name);
-                            candidate.Add("score", ambiguousIntent.score);
-                            candidate.Add("closestText", ambiguousIntent.closest_text);
-                            var recoResult = new RecognizerResult();
-                            recoResult.Intents.Add(ambiguousIntent.label.name, new IntentScore()
-                            {
-                                Score = ambiguousIntent.score
-                            });
-                            recoResult.Entities = recognizerResult.Entities;
-                            recoResult.Text = recognizerResult.Text;
-                            candidate.Add("result", JObject.FromObject(recoResult));
-                            candidates.Add(ambiguousIntent.label.name, candidate);
-                        }
-
-                        recognizerResult.Intents.Add(ChooseIntent, new IntentScore() { Score = 1.0 });
-                        recognizerResult.Properties = new Dictionary<string, object>() { { CandidatesCollection, candidates } };
-                    } 
-                    else
-                    {
-                        AddTopScoringIntent(result, ref recognizerResult);
-                    }
-                }
-                else
-                {
-                    AddTopScoringIntent(result, ref recognizerResult);
-                }
+                tempContext.TurnState[keyValue.Key] = keyValue.Value;
             }
 
-            recognizerResult.Properties.Add("result", result);
+            RecognizerResult recognizerResult = recognizer.Recognize(tempContext);
+
+            if (EntityRecognizers.Count != 0)
+            {
+                // Run entity recognition
+                recognizerResult = await RecognizeEntitiesAsync(dialogContext, activity, recognizerResult).ConfigureAwait(false);
+            }
+
+            // Score with orchestrator
+            recognizerResult.Properties.TryGetValue(OrchestratorRecognizer.ResultProperty, out var resultObject);
+
+            IReadOnlyCollection<Result> result = (IReadOnlyCollection<Result>)resultObject; 
+
+            // Disambiguate if configured
+            if (detectAmbiguity == true)
+            {
+                double topScore = result.First().Score;
+                float thresholdScore = DisambiguationScoreThreshold.GetValue(dialogContext.State);
+                double classifyingScore = Math.Round(topScore, 2) - Math.Round(thresholdScore, 2);
+                IEnumerable<Result> ambiguousIntents = result.Where(item => item.Score >= classifyingScore);
+
+                if (ambiguousIntents.Count() >= 1)
+                {
+                    // Add ambiguous intents that meet the threshold as candidates.
+                    JObject candidates = new JObject();
+                    foreach (Result ambiguousIntent in ambiguousIntents)
+                    {
+                        JObject candidate = new JObject();
+                        candidate.Add("intent", ambiguousIntent.Label.Name);
+                        candidate.Add("score", ambiguousIntent.Score);
+                        candidate.Add("closestText", ambiguousIntent.ClosestText);
+                        var recoResult = new RecognizerResult();
+                        recoResult.Intents.Add(ambiguousIntent.Label.Name, new IntentScore()
+                        {
+                            Score = ambiguousIntent.Score
+                        });
+                        recoResult.Entities = recognizerResult.Entities;
+                        recoResult.Text = recognizerResult.Text;
+                        candidate.Add("result", JObject.FromObject(recoResult));
+                        candidates.Add(ambiguousIntent.Label.Name, candidate);
+                    }
+
+                    recognizerResult.Intents.Add(ChooseIntent, new IntentScore() { Score = 1.0 });
+                    recognizerResult.Properties = new Dictionary<string, object>() { { CandidatesCollection, candidates } };
+                } 
+            }
 
             await dialogContext.Context.TraceActivityAsync(nameof(OrchestratorAdaptiveRecognizer), JObject.FromObject(recognizerResult), nameof(OrchestratorAdaptiveRecognizer), "Orchestrator Recognition ", cancellationToken).ConfigureAwait(false);
 
             TrackRecognizerResult(dialogContext, nameof(OrchestratorAdaptiveRecognizer), FillRecognizerResultTelemetryProperties(recognizerResult, telemetryProperties), telemetryMetrics);
-
-            return recognizerResult;
-        }
-
-        public IReadOnlyList<Result> Score(string text)
-        {
-            return resolver.Score(text);
-        }
-
-        private RecognizerResult AddTopScoringIntent(IReadOnlyList<Result> result, ref RecognizerResult recognizerResult)
-        {
-            var topScoringIntent = result.First().label.name;
-            var topScore = result.First().score;
-
-            // if top scoring intent is less than threshold, return None
-            if (topScore < UnknownIntentFilterScore)
-            {
-                recognizerResult.Intents.Add(NoneIntent, new IntentScore() { Score = 1.0 });
-            } 
-            else
-            {
-                if (!recognizerResult.Intents.ContainsKey(topScoringIntent))
-                {
-                    recognizerResult.Intents.Add(topScoringIntent, new IntentScore()
-                    {
-                        Score = result.First().score
-                    });
-                }
-            }
 
             return recognizerResult;
         }
@@ -348,31 +265,9 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
                 throw new ArgumentNullException($"Missing `ShapshotPath` information.");
             }
 
-            if (orchestrator == null)
+            if (recognizer == null)
             {
-                var fullModelPath = Path.GetFullPath(PathUtils.NormalizePath(modelPath));
-
-                // Create Orchestrator 
-                try
-                {
-                    orchestrator = new Microsoft.Orchestrator.Orchestrator(fullModelPath, useCompactEmbeddings);
-                } 
-                catch (Exception ex)
-                {
-                    throw new Exception("Failed to find or load Model", ex);
-                }
-            }
-
-            if (resolver == null)
-            {
-                var fullSnapShotPath = Path.GetFullPath(PathUtils.NormalizePath(snapshotPath));
-
-                // Load the snapshot
-                string content = File.ReadAllText(fullSnapShotPath);
-                byte[] snapShotByteArray = Encoding.UTF8.GetBytes(content);
-
-                // Load shapshot and create resolver
-                resolver = orchestrator.CreateLabelResolver(snapShotByteArray, useCompactEmbeddings);
+                recognizer = new OrchestratorRecognizer(modelPath, snapshotPath);
             }
         }
     }
