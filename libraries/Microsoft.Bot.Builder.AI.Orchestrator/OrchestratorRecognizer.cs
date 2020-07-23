@@ -6,19 +6,24 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Orchestrator;
 
 namespace Microsoft.Bot.Builder.AI.Orchestrator
 {
-    public class OrchestratorRecognizer
+    public class OrchestratorRecognizer : IRecognizer
     {
+        /// <summary>
+        /// Property key in RecognizerResult that holds the full recognition result from Orchestrator core.
+        /// </summary>
         public const string ResultProperty = "Result";
 
         private const float UnknownIntentFilterScore = 0.4F;
         private const string NoneIntent = "None";
         private static Microsoft.Orchestrator.Orchestrator orchestrator = null;
         private static string modelPath = null;
-        private string snapshotPath = null;
+        private string _snapshotPath = null;
         private ILabelResolver resolver = null;
 
         public OrchestratorRecognizer(string modelPath, string snapshotPath)
@@ -34,16 +39,28 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
             }
 
             OrchestratorRecognizer.modelPath = modelPath;
-            this.snapshotPath = snapshotPath;
+            _snapshotPath = snapshotPath;
             InitializeModel();
         }
 
         /// <summary>
-        /// Returns recognition results.
+        /// Returns recognition result.
         /// </summary>
         /// <param name="turnContext">Turn context.</param>
-        /// <returns>Analysis of utterance.</returns>
-        public RecognizerResult Recognize(ITurnContext turnContext)
+        /// <param name="cancellationToken">cancellation token.</param>
+        /// <returns>Recognition result.</returns>
+        public Task<RecognizerResult> RecognizeAsync(ITurnContext turnContext, CancellationToken cancellationToken)
+        {
+            return Task.FromResult(Recognize(turnContext));
+        }
+
+        public Task<T> RecognizeAsync<T>(ITurnContext turnContext, CancellationToken cancellationToken) 
+            where T : IRecognizerConvert, new()
+        {
+            throw new NotImplementedException();
+        }
+
+        private RecognizerResult Recognize(ITurnContext turnContext)
         {
             var text = turnContext.Activity.Text ?? string.Empty;
             var recognizerResult = new RecognizerResult()
@@ -60,10 +77,20 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
 
             // Score with orchestrator
             var result = resolver.Score(text);
-            AddTopScoringIntent(result, ref recognizerResult);
 
+            if (result.Any())
+            {
+                AddTopScoringIntent(result, ref recognizerResult);
+            }
+            
             // Add full recognition result as a 'result' property
             recognizerResult.Properties.Add(ResultProperty, result);
+
+            // Return 'None' if no intent matched.
+            if (!recognizerResult.Intents.Any())
+            {
+                recognizerResult.Intents.Add(NoneIntent, new IntentScore() { Score = 1.0 });
+            }
 
             return recognizerResult;
         }
@@ -99,7 +126,7 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
                 throw new ArgumentNullException($"Missing `ModelPath` information.");
             }
 
-            if (snapshotPath == null)
+            if (_snapshotPath == null)
             {
                 throw new ArgumentNullException($"Missing `ShapshotPath` information.");
             }
@@ -121,7 +148,7 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
 
             if (resolver == null)
             {
-                var fullSnapShotPath = Path.GetFullPath(PathUtils.NormalizePath(snapshotPath));
+                var fullSnapShotPath = Path.GetFullPath(PathUtils.NormalizePath(_snapshotPath));
 
                 // Load the snapshot
                 string content = File.ReadAllText(fullSnapShotPath);

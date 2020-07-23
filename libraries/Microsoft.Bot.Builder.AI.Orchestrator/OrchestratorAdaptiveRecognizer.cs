@@ -128,7 +128,7 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
                 tempContext.TurnState[keyValue.Key] = keyValue.Value;
             }
 
-            RecognizerResult recognizerResult = recognizer.Recognize(tempContext);
+            var recognizerResult = await recognizer.RecognizeAsync(tempContext, cancellationToken);
 
             if (EntityRecognizers.Count != 0)
             {
@@ -139,40 +139,43 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
             // Score with orchestrator
             recognizerResult.Properties.TryGetValue(OrchestratorRecognizer.ResultProperty, out var resultObject);
 
-            IReadOnlyCollection<Result> result = (IReadOnlyCollection<Result>)resultObject; 
+            var result = (IReadOnlyCollection<Result>)resultObject;
 
-            // Disambiguate if configured
-            if (detectAmbiguity == true)
+            if (result.Any())
             {
-                double topScore = result.First().Score;
-                float thresholdScore = DisambiguationScoreThreshold.GetValue(dialogContext.State);
-                double classifyingScore = Math.Round(topScore, 2) - Math.Round(thresholdScore, 2);
-                IEnumerable<Result> ambiguousIntents = result.Where(item => item.Score >= classifyingScore);
-
-                if (ambiguousIntents.Count() >= 1)
+                // Disambiguate if configured
+                if (detectAmbiguity == true)
                 {
-                    // Add ambiguous intents that meet the threshold as candidates.
-                    JObject candidates = new JObject();
-                    foreach (Result ambiguousIntent in ambiguousIntents)
-                    {
-                        JObject candidate = new JObject();
-                        candidate.Add("intent", ambiguousIntent.Label.Name);
-                        candidate.Add("score", ambiguousIntent.Score);
-                        candidate.Add("closestText", ambiguousIntent.ClosestText);
-                        var recoResult = new RecognizerResult();
-                        recoResult.Intents.Add(ambiguousIntent.Label.Name, new IntentScore()
-                        {
-                            Score = ambiguousIntent.Score
-                        });
-                        recoResult.Entities = recognizerResult.Entities;
-                        recoResult.Text = recognizerResult.Text;
-                        candidate.Add("result", JObject.FromObject(recoResult));
-                        candidates.Add(ambiguousIntent.Label.Name, candidate);
-                    }
+                    var topScore = result.First().Score;
+                    var thresholdScore = DisambiguationScoreThreshold.GetValue(dialogContext.State);
+                    var classifyingScore = Math.Round(topScore, 2) - Math.Round(thresholdScore, 2);
+                    var ambiguousIntents = result.Where(item => item.Score >= classifyingScore);
 
-                    recognizerResult.Intents.Add(ChooseIntent, new IntentScore() { Score = 1.0 });
-                    recognizerResult.Properties = new Dictionary<string, object>() { { CandidatesCollection, candidates } };
-                } 
+                    if (ambiguousIntents.Any())
+                    {
+                        // Add ambiguous intents that meet the threshold as candidates.
+                        var candidates = new JObject();
+                        foreach (Result ambiguousIntent in ambiguousIntents)
+                        {
+                            var candidate = new JObject();
+                            candidate.Add("intent", ambiguousIntent.Label.Name);
+                            candidate.Add("score", ambiguousIntent.Score);
+                            candidate.Add("closestText", ambiguousIntent.ClosestText);
+                            var recoResult = new RecognizerResult();
+                            recoResult.Intents.Add(ambiguousIntent.Label.Name, new IntentScore()
+                            {
+                                Score = ambiguousIntent.Score
+                            });
+                            recoResult.Entities = recognizerResult.Entities;
+                            recoResult.Text = recognizerResult.Text;
+                            candidate.Add("result", JObject.FromObject(recoResult));
+                            candidates.Add(ambiguousIntent.Label.Name, candidate);
+                        }
+
+                        recognizerResult.Intents.Add(ChooseIntent, new IntentScore() { Score = 1.0 });
+                        recognizerResult.Properties = new Dictionary<string, object>() { { CandidatesCollection, candidates } };
+                    }
+                }
             }
 
             await dialogContext.Context.TraceActivityAsync(nameof(OrchestratorAdaptiveRecognizer), JObject.FromObject(recognizerResult), nameof(OrchestratorAdaptiveRecognizer), "Orchestrator Recognition ", cancellationToken).ConfigureAwait(false);
@@ -221,7 +224,7 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
                 }
 
                 // The Entity type names are not consistent, map everything to camelcase so we can process them cleaner.
-                JObject entity = JObject.FromObject(entityResult);
+                var entity = JObject.FromObject(entityResult);
                 ((JArray)values).Add(entity.GetValue("text"));
 
                 // get/create $instance
