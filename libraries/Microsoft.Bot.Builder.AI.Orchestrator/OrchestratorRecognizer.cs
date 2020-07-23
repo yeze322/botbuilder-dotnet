@@ -58,8 +58,6 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
                 return recognizerResult;
             }
 
-            InitializeModel();
-
             // Score with orchestrator
             var result = resolver.Score(text);
             AddTopScoringIntent(result, ref recognizerResult);
