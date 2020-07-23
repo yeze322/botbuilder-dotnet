@@ -200,7 +200,7 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
                 entityPool.Add(textEntity);
 
                 // process entities using EntityRecognizerSet
-                var entitySet = new EntityRecognizerSet(this.EntityRecognizers);
+                var entitySet = new EntityRecognizerSet(EntityRecognizers);
                 var newEntities = await entitySet.RecognizeEntitiesAsync(dialogContext, activity, entityPool).ConfigureAwait(false);
                 if (newEntities.Any())
                 {
