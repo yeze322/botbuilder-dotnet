@@ -114,4 +114,3 @@ at [secure@microsoft.com](mailto:secure@microsoft.com).  You should receive a re
 Copyright (c) Microsoft Corporation. All rights reserved.
 
 Licensed under the [MIT](./LICENSE.md) License.
-
