@@ -17,7 +17,7 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
         /// <summary>
         /// Property key in RecognizerResult that holds the full recognition result from Orchestrator core.
         /// </summary>
-        public const string ResultProperty = "Result";
+        public const string ResultProperty = "result";
         private const float UnknownIntentFilterScore = 0.4F;
         private const string NoneIntent = "None";
         private static Microsoft.Orchestrator.Orchestrator orchestrator = null;
