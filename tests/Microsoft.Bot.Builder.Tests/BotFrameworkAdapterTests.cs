@@ -187,7 +187,7 @@ namespace Microsoft.Bot.Builder.Tests
             // Skill1 is calling ContinueSkillConversationAsync() to proactively send an Activity to the channel
             var callback = new BotCallbackHandler(async (turnContext, ct) =>
             {
-                GetAppCredentialsAndAssertValues(turnContext, skill1AppId, AuthenticationConstants.ToChannelFromBotOAuthScope, 1);
+                GetAppCredentialsAndAssertValues(turnContext, skill1AppId, string.Empty, 2);
                 GetConnectorClientsAndAssertValues(
                     turnContext,
                     skill1AppId,
@@ -198,7 +198,7 @@ namespace Microsoft.Bot.Builder.Tests
                 // Get "skill1-to-channel" ConnectorClient off of TurnState
                 var adapter = turnContext.Adapter as BotFrameworkAdapter;
                 var clientCache = GetCache<ConcurrentDictionary<string, ConnectorClient>>(adapter, ConnectorClientsCacheName);
-                clientCache.TryGetValue($"{channelServiceUrl}{skill1AppId}:{AuthenticationConstants.ToChannelFromBotOAuthScope}", out var client);
+                clientCache.TryGetValue($"{channelServiceUrl}{skill1AppId}", out var client);
 
                 var turnStateClient = turnContext.TurnState.Get<IConnectorClient>();
                 var clientCreds = turnStateClient.Credentials as AppCredentials;
@@ -227,6 +227,12 @@ namespace Microsoft.Bot.Builder.Tests
                 Assert.AreEqual(credsCount, credsCache.Count);
 
                 Assert.AreEqual(expectedAppId, creds.MicrosoftAppId);
+                
+                // If expectedScope is string.Empty, change its value to
+                // AuthenticationConstants.ToBotFromChannelTokenIssuer
+                expectedScope = string.IsNullOrEmpty(expectedScope) ?
+                    AuthenticationConstants.ToBotFromChannelTokenIssuer :
+                    expectedScope;
                 Assert.AreEqual(expectedScope, creds.OAuthScope);
             }
         }
@@ -234,10 +240,11 @@ namespace Microsoft.Bot.Builder.Tests
         private static void GetConnectorClientsAndAssertValues(ITurnContext turnContext, string expectedAppId, string expectedScope, Uri expectedUrl, int clientCount)
         {
             var clientCache = GetCache<ConcurrentDictionary<string, ConnectorClient>>((BotFrameworkAdapter)turnContext.Adapter, ConnectorClientsCacheName);
-            var cacheKey = expectedAppId == null ? $"{expectedUrl}:" : $"{expectedUrl}{expectedAppId}:{expectedScope}";
+            var cacheKey = expectedAppId == null ? $"{expectedUrl}" : $"{expectedUrl}{expectedAppId}";
+            Assert.AreEqual(clientCount, clientCache.Count);
+
             clientCache.TryGetValue(cacheKey, out var client);
 
-            Assert.AreEqual(clientCount, clientCache.Count);
             var creds = (AppCredentials)client?.Credentials;
             Assert.AreEqual(expectedAppId, creds?.MicrosoftAppId);
             Assert.AreEqual(expectedScope, creds?.OAuthScope);
