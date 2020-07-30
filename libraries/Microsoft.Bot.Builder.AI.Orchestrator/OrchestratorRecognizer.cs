@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -37,7 +38,7 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
                 throw new ArgumentNullException($"Missing `SnapshotPath` information.");
             }
 
-            OrchestratorRecognizer.modelPath = modelPath;
+            this.modelPath = modelPath;
             _snapshotPath = snapshotPath;
             InitializeModel();
         }
@@ -75,7 +76,11 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
             }
 
             // Score with orchestrator
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
             var result = resolver.Score(text);
+            sw.Stop();
+            Console.WriteLine($"Orchestrator recognize : {sw.ElapsedMilliseconds}");
 
             if (result.Any())
             {
@@ -133,16 +138,22 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
             if (orchestrator == null)
             {
                 var fullModelPath = Path.GetFullPath(PathUtils.NormalizePath(modelPath));
+                Stopwatch sw = new Stopwatch();
 
                 // Create Orchestrator 
                 try
                 {
+                    sw.Start();
                     orchestrator = new Microsoft.Orchestrator.Orchestrator(fullModelPath);
                 }
                 catch (Exception ex)
                 {
+                    sw.Stop();
                     throw new Exception("Failed to find or load Model", ex);
                 }
+
+                sw.Stop();
+                Console.WriteLine($"Model load time:{sw.ElapsedMilliseconds}");
             }
 
             if (resolver == null)

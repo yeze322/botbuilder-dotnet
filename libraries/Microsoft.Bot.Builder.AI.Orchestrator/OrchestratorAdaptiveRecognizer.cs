@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -128,7 +129,11 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
                 tempContext.TurnState[keyValue.Key] = keyValue.Value;
             }
 
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
             var recognizerResult = await recognizer.RecognizeAsync(tempContext, cancellationToken);
+            sw.Stop();
+            Trace.TraceInformation($"Orchestrator recognize in ${sw.ElapsedMilliseconds}ms");
 
             if (EntityRecognizers.Count != 0)
             {
@@ -270,7 +275,11 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
 
             if (recognizer == null)
             {
+                Stopwatch sw = new Stopwatch();
+                sw.Start();
                 recognizer = new OrchestratorRecognizer(modelPath, snapshotPath);
+                sw.Stop();
+                Trace.TraceInformation($"Orchestrator loaded in {sw.ElapsedMilliseconds}ms");
             }
         }
     }
