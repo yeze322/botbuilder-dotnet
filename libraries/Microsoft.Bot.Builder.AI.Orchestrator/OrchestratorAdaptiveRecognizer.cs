@@ -133,7 +133,7 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
             sw.Start();
             var recognizerResult = await recognizer.RecognizeAsync(tempContext, cancellationToken);
             sw.Stop();
-            Trace.TraceInformation($"Orchestrator recognize in ${sw.ElapsedMilliseconds}ms");
+            Trace.TraceInformation($"Orchestrator recognize in {sw.ElapsedMilliseconds}ms");
 
             if (EntityRecognizers.Count != 0)
             {
