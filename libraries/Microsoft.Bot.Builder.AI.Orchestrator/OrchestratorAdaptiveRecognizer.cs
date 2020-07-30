@@ -113,7 +113,7 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
         /// <param name="telemetryProperties">Additional properties to be logged to telemetry with the LuisResult event.</param>
         /// <param name="telemetryMetrics">Additional metrics to be logged to telemetry with the LuisResult event.</param>
         /// <returns>A <see cref="RecognizerResult"/> containing the QnA Maker result.</returns>
-        public override async Task<RecognizerResult> RecognizeAsync(DialogContext dialogContext, Activity activity, CancellationToken cancellationToken, Dictionary<string, string> telemetryProperties = null, Dictionary<string, double> telemetryMetrics = null)
+        public override async Task<RecognizerResult> RecognizeAsync(DialogContext dialogContext, Schema.Activity activity, CancellationToken cancellationToken, Dictionary<string, string> telemetryProperties = null, Dictionary<string, double> telemetryMetrics = null)
         {
             var text = activity.Text ?? string.Empty;
             var detectAmbiguity = DetectAmbiguousIntents.GetValue(dialogContext.State);
@@ -190,7 +190,7 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
             return recognizerResult;
         }
 
-        private async Task<RecognizerResult> RecognizeEntitiesAsync(DialogContext dialogContext, Activity activity, RecognizerResult recognizerResult)
+        private async Task<RecognizerResult> RecognizeEntitiesAsync(DialogContext dialogContext, Schema.Activity activity, RecognizerResult recognizerResult)
         {
             var text = activity.Text ?? string.Empty;
             var entityPool = new List<Entity>();
