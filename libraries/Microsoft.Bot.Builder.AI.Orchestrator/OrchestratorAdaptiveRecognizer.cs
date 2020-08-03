@@ -34,16 +34,6 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
         /// </summary>
         private const string CandidatesCollection = "candidates";
 
-        /// <summary>
-        /// Standard none intent that means none of the recognizers recognize the intent.
-        /// </summary>
-        private const string NoneIntent = "None";
-
-        /// <summary>
-        /// If the top scoring intent is lower than this score, we will return "None" intent.
-        /// </summary>
-        private const float UnknownIntentFilterScore = 0.40F;
-
         private static string modelPath = null;
         private string snapshotPath = null;
         private OrchestratorRecognizer recognizer = null;
@@ -84,7 +74,9 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
         /// The entity recognizers.
         /// </value>
         [JsonProperty("entityRecognizers")]
+#pragma warning disable CA2227 // Collection properties should be read only (keeping this consistent with RegexRecognizer)
         public List<EntityRecognizer> EntityRecognizers { get; set; } = new List<EntityRecognizer>();
+#pragma warning restore CA2227 // Collection properties should be read only
 
         /// <summary>
         /// Gets or sets the disambiguation score threshold.
@@ -131,9 +123,11 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
 
             Stopwatch sw = new Stopwatch();
             sw.Start();
-            var recognizerResult = await recognizer.RecognizeAsync(tempContext, cancellationToken);
+            var recognizerResult = await recognizer.RecognizeAsync(tempContext, cancellationToken).ConfigureAwait(false);
             sw.Stop();
             Trace.TraceInformation($"Orchestrator recognize in {sw.ElapsedMilliseconds}ms");
+
+            tempContext.Dispose();
 
             if (EntityRecognizers.Count != 0)
             {
@@ -230,7 +224,7 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
 
                 // The Entity type names are not consistent, map everything to camelcase so we can process them cleaner.
                 var entity = JObject.FromObject(entityResult);
-                ((JArray)values).Add(entity.GetValue("text"));
+                ((JArray)values).Add(entity.GetValue("text", StringComparison.InvariantCulture));
 
                 // get/create $instance
                 JToken instanceRoot;
@@ -249,12 +243,12 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
                 }
 
                 JObject instance = new JObject();
-                instance.Add("startIndex", entity.GetValue("start"));
-                instance.Add("endIndex", entity.GetValue("end"));
+                instance.Add("startIndex", entity.GetValue("start", StringComparison.InvariantCulture));
+                instance.Add("endIndex", entity.GetValue("end", StringComparison.InvariantCulture));
                 instance.Add("score", (double)1.0);
-                instance.Add("text", entity.GetValue("text"));
-                instance.Add("type", entity.GetValue("type"));
-                instance.Add("resolution", entity.GetValue("resolution"));
+                instance.Add("text", entity.GetValue("text", StringComparison.InvariantCulture));
+                instance.Add("type", entity.GetValue("type", StringComparison.InvariantCulture));
+                instance.Add("resolution", entity.GetValue("resolution", StringComparison.InvariantCulture));
                 ((JArray)instanceData).Add(instance);
             }
 

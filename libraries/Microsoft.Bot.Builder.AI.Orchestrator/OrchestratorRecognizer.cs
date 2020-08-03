@@ -60,6 +60,30 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
             throw new NotImplementedException();
         }
 
+        private static RecognizerResult AddTopScoringIntent(IReadOnlyList<Result> result, ref RecognizerResult recognizerResult)
+        {
+            var topScoringIntent = result[0].Label.Name;
+            var topScore = result[0].Score;
+
+            // if top scoring intent is less than threshold, return None
+            if (topScore < UnknownIntentFilterScore)
+            {
+                recognizerResult.Intents.Add(NoneIntent, new IntentScore() { Score = 1.0 });
+            }
+            else
+            {
+                if (!recognizerResult.Intents.ContainsKey(topScoringIntent))
+                {
+                    recognizerResult.Intents.Add(topScoringIntent, new IntentScore()
+                    {
+                        Score = result[0].Score
+                    });
+                }
+            }
+
+            return recognizerResult;
+        }
+
         private RecognizerResult Recognize(ITurnContext turnContext)
         {
             var text = turnContext.Activity.Text ?? string.Empty;
@@ -94,30 +118,6 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
             if (!recognizerResult.Intents.Any())
             {
                 recognizerResult.Intents.Add(NoneIntent, new IntentScore() { Score = 1.0 });
-            }
-
-            return recognizerResult;
-        }
-
-        private RecognizerResult AddTopScoringIntent(IReadOnlyList<Result> result, ref RecognizerResult recognizerResult)
-        {
-            var topScoringIntent = result.First().Label.Name;
-            var topScore = result.First().Score;
-
-            // if top scoring intent is less than threshold, return None
-            if (topScore < UnknownIntentFilterScore)
-            {
-                recognizerResult.Intents.Add(NoneIntent, new IntentScore() { Score = 1.0 });
-            }
-            else
-            {
-                if (!recognizerResult.Intents.ContainsKey(topScoringIntent))
-                {
-                    recognizerResult.Intents.Add(topScoringIntent, new IntentScore()
-                    {
-                        Score = result.First().Score
-                    });
-                }
             }
 
             return recognizerResult;

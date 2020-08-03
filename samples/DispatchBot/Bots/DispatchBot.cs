@@ -26,7 +26,7 @@ namespace Microsoft.BotBuilderSamples
         protected override async Task OnMessageActivityAsync(ITurnContext<IMessageActivity> turnContext, CancellationToken cancellationToken)
         {
             // Top intent tell us which cognitive service to use.
-            var allScores = _botServices.Dispatch.Recognize(turnContext);
+            var allScores = await _botServices.Dispatch.RecognizeAsync(turnContext, cancellationToken);
             var topIntent = allScores.Intents.First().Key;
             
             // Next, we call the dispatcher with the top intent.
