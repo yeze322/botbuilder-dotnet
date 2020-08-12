@@ -191,7 +191,7 @@ namespace Microsoft.Bot.Builder.Dialogs
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="dc"></param>
+        /// <param name="dc">The dialog context.</param>
         /// <param name="index"></param>
         /// <param name="reason"></param>
         /// <param name="result"></param>

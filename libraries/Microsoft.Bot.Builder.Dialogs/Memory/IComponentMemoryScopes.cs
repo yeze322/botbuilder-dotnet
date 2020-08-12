@@ -12,7 +12,7 @@ namespace Microsoft.Bot.Builder.Dialogs.Memory
     public interface IComponentMemoryScopes
     {
         /// <summary>
-        /// 
+        /// Gets an enumerable of the memory scopes.
         /// </summary>
         /// <returns>An <see cref="IEnumerator{T}"/> of type <see cref="MemoryScope"/>.</returns>
         IEnumerable<MemoryScope> GetMemoryScopes();
