@@ -13,6 +13,12 @@ namespace Microsoft.Bot.Builder.Dialogs.Memory.PathResolvers
         private readonly string _postfix;
         private readonly string _prefix;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AliasPathResolver"/> class.
+        /// </summary>
+        /// <param name="alias">The alias.</param>
+        /// <param name="prefix">The prefix for the alias.</param>
+        /// <param name="postfix">The postfix for the alias.</param>
         public AliasPathResolver(string alias, string prefix, string postfix = null)
         {
             Alias = alias?.Trim() ?? throw new ArgumentNullException(nameof(alias));
@@ -28,6 +34,11 @@ namespace Microsoft.Bot.Builder.Dialogs.Memory.PathResolvers
         /// </value>
         public string Alias { get; }
 
+        /// <summary>
+        /// Transforms the path parameter if it has an alias mapping.
+        /// </summary>
+        /// <param name="path">The path to parse.</param>
+        /// <returns>A string representing the path.</returns>
         public virtual string TransformPath(string path)
         {
             if (path == null)
@@ -47,6 +58,11 @@ namespace Microsoft.Bot.Builder.Dialogs.Memory.PathResolvers
         }
 
 #pragma warning disable CA1822 // Mark members as static (we can't change this without breaking binary compat)
+        /// <summary>
+        /// Checks if the ch parameter is a character or an underscore.
+        /// </summary>
+        /// <param name="ch">The character to check.</param>
+        /// <returns>A bool.</returns>
         protected bool IsPathChar(char ch)
 #pragma warning restore CA1822 // Mark members as static
         {

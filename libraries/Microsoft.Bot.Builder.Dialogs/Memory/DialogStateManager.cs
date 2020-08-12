@@ -33,6 +33,11 @@ namespace Microsoft.Bot.Builder.Dialogs.Memory
         private readonly DialogContext _dialogContext;
         private int _version;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DialogStateManager"/> class.
+        /// </summary>
+        /// <param name="dc">The dialog context.</param>
+        /// <param name="configuration">The dialog state manager configuration.</param>
         public DialogStateManager(DialogContext dc, DialogStateManagerConfiguration configuration = null)
         {
             ComponentRegistration.Add(new DialogsComponentRegistration());
@@ -66,16 +71,49 @@ namespace Microsoft.Bot.Builder.Dialogs.Memory
             dc.Context.TurnState.Set(Configuration);
         }
 
+        /// <summary>
+        /// Gets or sets the dialog state managers configuration.
+        /// </summary>
+        /// <value>
+        /// The <see cref="DialogStateManagerConfiguration"/>.
+        /// </value>
         public DialogStateManagerConfiguration Configuration { get; set; }
 
+        /// <summary>
+        /// Gets the keys in the configuration's memory scopes.
+        /// </summary>
+        /// <value>
+        /// A <see cref="ICollection"/> of type string.
+        /// </value>
         public ICollection<string> Keys => Configuration.MemoryScopes.Select(ms => ms.Name).ToList();
 
+        /// <summary>
+        /// Gets the values in the configuration's memory scopes.
+        /// </summary>
+        /// <value>
+        /// A <see cref="ICollection"/> of type object.
+        /// </value>
         public ICollection<object> Values => Configuration.MemoryScopes.Select(ms => ms.GetMemory(_dialogContext)).ToList();
 
+        /// <summary>
+        /// Gets the count of the items in the configuration's memory scopes.
+        /// </summary>
+        /// <value>An int.</value>
         public int Count => Configuration.MemoryScopes.Count;
 
+        /// <summary>
+        /// Gets a value indicating whether gets the IsReadOnly property.
+        /// </summary>
+        /// <value>
+        /// A bool.
+        /// </value>
         public bool IsReadOnly => true;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns>An object.</returns>
         public object this[string key]
         {
             get => GetValue<object>(key, () => null);
@@ -407,41 +445,79 @@ namespace Microsoft.Bot.Builder.Dialogs.Memory
             }
         }
 
+        /// <summary>
+        /// Adds a key value pair.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="value">The value.</param>
         public void Add(string key, object value)
         {
             throw new NotSupportedException();
         }
 
+        /// <summary>
+        /// Checks if the key is contained in any of the Configuration's Memory Scopes contains. 
+        /// </summary>
+        /// <param name="key">The key to search for.</param>
+        /// <returns>A bool.</returns>
         public bool ContainsKey(string key)
         {
             return Configuration.MemoryScopes.Any(ms => ms.Name.ToUpperInvariant() == key.ToUpperInvariant());
         }
 
+        /// <summary>
+        /// Removes the key from the collection.
+        /// </summary>
+        /// <param name="key">The string to be removed.</param>
+        /// <returns>A bool.</returns>
         public bool Remove(string key)
         {
             throw new NotSupportedException();
         }
 
+        /// <summary>
+        /// Attemps to retrieve a value, given a key.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="value">The value.</param>
+        /// <returns>A bool.</returns>
         public bool TryGetValue(string key, out object value)
         {
             return TryGetValue<object>(key, out value);
         }
 
+        /// <summary>
+        /// Adds a key/value pair.
+        /// </summary>
+        /// <param name="item">The key-value pair you want to add.</param>
         public void Add(KeyValuePair<string, object> item)
         {
             throw new NotSupportedException();
         }
 
+        /// <summary>
+        /// Resets the dictionary.
+        /// </summary>
         public void Clear()
         {
             throw new NotSupportedException();
         }
 
+        /// <summary>
+        /// Checks to see if the key value pair are contained in the collection.
+        /// </summary>
+        /// <param name="item">The <see cref="KeyValuePair{TKey, TValue}"/>.</param>
+        /// <returns>A bool.</returns>
         public bool Contains(KeyValuePair<string, object> item)
         {
             throw new NotSupportedException();
         }
 
+        /// <summary>
+        /// Copies object at the parameter index to the next slot.
+        /// </summary>
+        /// <param name="array">The list of objects.</param>
+        /// <param name="arrayIndex">The index.</param>
         public void CopyTo(KeyValuePair<string, object>[] array, int arrayIndex)
         {
             foreach (var ms in Configuration.MemoryScopes)
@@ -450,11 +526,20 @@ namespace Microsoft.Bot.Builder.Dialogs.Memory
             }
         }
 
+        /// <summary>
+        /// Removes the key-value pair.
+        /// </summary>
+        /// <param name="item">The key-value pair you want to remove.</param>
+        /// <returns>A bool.</returns>
         public bool Remove(KeyValuePair<string, object> item)
         {
             throw new NotSupportedException();
         }
 
+        /// <summary>
+        /// Gets an enumerator for each memory scope in the configuration.
+        /// </summary>
+        /// <returns>A <see cref="KeyValuePair{TKey, TValue}"/>.</returns>
         public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
         {
             foreach (var ms in Configuration.MemoryScopes)

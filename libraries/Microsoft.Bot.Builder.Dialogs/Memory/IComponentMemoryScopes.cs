@@ -6,8 +6,15 @@ using Microsoft.Bot.Builder.Dialogs.Memory.Scopes;
 
 namespace Microsoft.Bot.Builder.Dialogs.Memory
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public interface IComponentMemoryScopes
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns>An <see cref="IEnumerator{T}"/> of type <see cref="MemoryScope"/>.</returns>
         IEnumerable<MemoryScope> GetMemoryScopes();
     }
 }

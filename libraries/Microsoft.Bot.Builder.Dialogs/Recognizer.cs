@@ -41,6 +41,11 @@ namespace Microsoft.Bot.Builder.Dialogs
         /// </remarks>
         public const string NoneIntent = "None";
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Recognizer"/> class.
+        /// </summary>
+        /// <param name="callerPath">The path to the caller's file.</param>
+        /// <param name="callerLine">The line number of the caller.</param>
         public Recognizer([CallerFilePath] string callerPath = "", [CallerLineNumber] int callerLine = 0)
         {
             if (!string.IsNullOrEmpty(callerPath))

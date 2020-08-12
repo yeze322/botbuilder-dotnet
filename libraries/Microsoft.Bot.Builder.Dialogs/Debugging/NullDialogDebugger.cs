@@ -12,6 +12,9 @@ namespace Microsoft.Bot.Builder.Dialogs.Debugging
     /// </summary>
     public class NullDialogDebugger : IDialogDebugger
     {
+        /// <summary>
+        /// A readonly instance of a debugger.
+        /// </summary>
         public static readonly IDialogDebugger Instance = new NullDialogDebugger();
 
         private NullDialogDebugger()

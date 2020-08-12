@@ -2,6 +2,9 @@
 
 namespace Microsoft.Bot.Builder.Dialogs
 {
+    /// <summary>
+    /// 
+    /// </summary>
     [DebuggerDisplay("{Name}")]
     public class DialogEvent
     {

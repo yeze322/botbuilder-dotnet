@@ -86,16 +86,34 @@ namespace Microsoft.Bot.Builder.Dialogs.Debugging
             return item;
         }
 
+        /// <summary>
+        /// Outputs the line index and char index.
+        /// </summary>
+        /// <returns>A string.</returns>
         public override string ToString() => $"{LineIndex}:{CharIndex}";
 
+        /// <summary>
+        /// Creates a new instance copy of the current <see cref="SourcePoint"/>.
+        /// </summary>
+        /// <returns>A <see cref="SourcePoint"/>.</returns>
         public SourcePoint DeepClone() => new SourcePoint() { LineIndex = LineIndex, CharIndex = CharIndex };
 
+        /// <summary>
+        /// Checks if the two objects are equivalent. 
+        /// </summary>
+        /// <param name="obj">The object to be compared.</param>
+        /// <returns>A bool.</returns>
         public override bool Equals(object obj)
         {
             // Auto-generated
             return Equals(obj as SourcePoint);
         }
 
+        /// <summary>
+        /// Checks if the two objects are equivalent. 
+        /// </summary>
+        /// <param name="other">The <see cref="SourcePoint"/> to be compared.</param>
+        /// <returns>A bool.</returns>
         public bool Equals(SourcePoint other)
         {
             // Auto-generated
@@ -104,6 +122,10 @@ namespace Microsoft.Bot.Builder.Dialogs.Debugging
                    CharIndex == other.CharIndex;
         }
 
+        /// <summary>
+        /// Gets the hashcode of this object. 
+        /// </summary>
+        /// <returns>An int.</returns>
         public override int GetHashCode()
         {
             // Auto-generated

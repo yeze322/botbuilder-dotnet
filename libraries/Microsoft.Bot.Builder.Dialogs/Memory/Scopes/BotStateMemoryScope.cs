@@ -64,6 +64,13 @@ namespace Microsoft.Bot.Builder.Dialogs.Memory.Scopes
             throw new NotSupportedException("You cannot replace the root BotState object");
         }
 
+        /// <summary>
+        /// Loads a dialog context asynchronously.
+        /// </summary>
+        /// <param name="dialogContext">The dialog context to be loaded.</param>
+        /// <param name="force"></param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         public override async Task LoadAsync(DialogContext dialogContext, bool force = false, CancellationToken cancellationToken = default)
         {
             var botState = GetBotState(dialogContext);
@@ -74,6 +81,13 @@ namespace Microsoft.Bot.Builder.Dialogs.Memory.Scopes
             }
         }
 
+        /// <summary>
+        /// Saves changes to the dialog context.
+        /// </summary>
+        /// <param name="dialogContext">The dialog context.</param>
+        /// <param name="force"></param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         public override async Task SaveChangesAsync(DialogContext dialogContext, bool force = false, CancellationToken cancellationToken = default)
         {
             var botState = GetBotState(dialogContext);
@@ -84,6 +98,12 @@ namespace Microsoft.Bot.Builder.Dialogs.Memory.Scopes
             }
         }
 
+        /// <summary>
+        /// When overridden, it deletes the dialog context.
+        /// </summary>
+        /// <param name="dialogContext">The dialog context to be deleted.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         public override Task DeleteAsync(DialogContext dialogContext, CancellationToken cancellationToken = default)
         {
             return Task.CompletedTask;

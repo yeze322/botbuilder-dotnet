@@ -5,6 +5,9 @@ using System;
 
 namespace Microsoft.Bot.Builder.Dialogs
 {
+    /// <summary>
+    /// 
+    /// </summary>
 #pragma warning disable CA1052 // Static holder types should be Static or NotInheritable (we can't change this without breaking binary compat)
     public class ThisPath
 #pragma warning restore CA1052 // Static holder types should be Static or NotInheritable
@@ -14,6 +17,9 @@ namespace Microsoft.Bot.Builder.Dialogs
         /// </summary>
         public const string Options = "this.options";
 
+        /// <summary>
+        /// The option passed to the active dialog.
+        /// </summary>
         [Obsolete("This property is deprecated, use ThisPath.Options instead.")]
         public const string OPTIONS = "this.options";
     }

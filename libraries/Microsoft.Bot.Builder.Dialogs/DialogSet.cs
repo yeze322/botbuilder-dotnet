@@ -35,6 +35,9 @@ namespace Microsoft.Bot.Builder.Dialogs
             _telemetryClient = NullBotTelemetryClient.Instance;
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DialogSet"/> class.
+        /// </summary>
         public DialogSet()
         {
             _dialogState = null;
@@ -200,6 +203,10 @@ namespace Microsoft.Bot.Builder.Dialogs
             return null;
         }
 
+        /// <summary>
+        /// Returns the values of all dialogs.
+        /// </summary>
+        /// <returns>A <see cref="Dialog"/>.</returns>
         public IEnumerable<Dialog> GetDialogs()
         {
             return _dialogs.Values;

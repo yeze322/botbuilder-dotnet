@@ -5,6 +5,9 @@ using System.Collections.Generic;
 
 namespace Microsoft.Bot.Builder.Dialogs
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public interface IDialogDependencies
     {
         /// <summary>

@@ -8,8 +8,15 @@ using Microsoft.Bot.Builder.Dialogs.Memory.Scopes;
 
 namespace Microsoft.Bot.Builder.Dialogs
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class DialogsComponentRegistration : ComponentRegistration, IComponentMemoryScopes, IComponentPathResolvers
     {
+        /// <summary>
+        /// Enum containing the types of memory scopes.
+        /// </summary>
+        /// <returns>A <see cref="MemoryScope"/>.</returns>
         public virtual IEnumerable<MemoryScope> GetMemoryScopes()
         {
             yield return new TurnMemoryScope();
@@ -23,6 +30,10 @@ namespace Microsoft.Bot.Builder.Dialogs
             yield return new UserMemoryScope();
         }
 
+        /// <summary>
+        /// An enum that contains the types of path resolvers.
+        /// </summary>
+        /// <returns>An <see cref="IPathResolver"/>.</returns>
         public virtual IEnumerable<IPathResolver> GetPathResolvers()
         {
             yield return new DollarPathResolver();

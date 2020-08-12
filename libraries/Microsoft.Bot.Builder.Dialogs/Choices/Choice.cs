@@ -14,6 +14,10 @@ namespace Microsoft.Bot.Builder.Dialogs.Choices
     public class Choice
 #pragma warning restore CA1724 // Namespace name conflict
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Choice"/> class.
+        /// </summary>
+        /// <param name="value">The value of the choice.</param>
         public Choice(string value = null)
         {
             Value = value;

@@ -79,6 +79,12 @@ namespace Microsoft.Bot.Builder.Dialogs
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <value>
+        /// A <see cref="SourceRange"/>.
+        /// </value>
         [JsonIgnore]
         public virtual SourceRange Source => DebugSupport.SourceMap.TryGetValue(this, out var range) ? range : null;
 
@@ -247,11 +253,20 @@ namespace Microsoft.Bot.Builder.Dialogs
             return Task.FromResult(false);
         }
 
+        /// <summary>
+        /// Gets the type name.
+        /// </summary>
+        /// <returns>The type of this type.</returns>
         protected virtual string OnComputeId()
         {
             return this.GetType().Name;
         }
 
+        /// <summary>
+        /// Saves the path and line number to the <see cref="DebugSupport"/>'s source map.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <param name="lineNumber">The line number.</param>
         protected void RegisterSourceLocation(string path, int lineNumber)
         {
             if (!string.IsNullOrEmpty(path))

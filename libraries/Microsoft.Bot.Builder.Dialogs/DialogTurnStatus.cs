@@ -3,6 +3,9 @@
 
 namespace Microsoft.Bot.Builder.Dialogs
 {
+    /// <summary>
+    /// The set of turn statuses for dialogs.
+    /// </summary>
     public enum DialogTurnStatus
     {
         /// <summary>

@@ -8,12 +8,17 @@ namespace Microsoft.Bot.Builder.Dialogs.Debugging
     /// </summary>
     public class NullSourceMap : ISourceMap
     {
+        /// <summary>
+        /// A readonly instance of the NullSourceMap.
+        /// </summary>
         public static readonly NullSourceMap Instance = new NullSourceMap();
 
+        /// <inheritdoc/>
         public void Add(object item, SourceRange range)
         {
         }
 
+        /// <inheritdoc/>
         public bool TryGetValue(object item, out SourceRange range)
         {
             range = null;

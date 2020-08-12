@@ -10,12 +10,16 @@ namespace Microsoft.Bot.Builder.Dialogs.Memory.Scopes
     /// </summary>
     public class DialogClassMemoryScope : MemoryScope
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DialogClassMemoryScope"/> class.
+        /// </summary>
         public DialogClassMemoryScope()
             : base(ScopePath.DialogClass)
         {
             this.IncludeInSnapshot = false;
         }
 
+        /// <inheritdoc/>
         public override object GetMemory(DialogContext dc)
         {
             if (dc == null)
@@ -37,6 +41,7 @@ namespace Microsoft.Bot.Builder.Dialogs.Memory.Scopes
             return new ReadOnlyObject(dc.FindDialog(dc.Parent?.ActiveDialog?.Id ?? dc.ActiveDialog?.Id));
         }
 
+        /// <inheritdoc/>
         public override void SetMemory(DialogContext dc, object memory)
         {
             throw new NotSupportedException("You can't modify the dialogclass scope");

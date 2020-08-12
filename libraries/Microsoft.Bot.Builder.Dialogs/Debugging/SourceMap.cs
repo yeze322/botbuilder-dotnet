@@ -10,6 +10,9 @@ namespace Microsoft.Bot.Builder.Dialogs.Debugging
         /// </summary>
         public class SourceMap : Dictionary<object, SourceRange>, ISourceMap
         {
+            /// <summary>
+            /// A readonly instance of <see cref="SourceMap"/>.
+            /// </summary>
             public static readonly SourceMap Instance = new SourceMap();
         }
 }

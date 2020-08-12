@@ -25,14 +25,26 @@ namespace Microsoft.Bot.Builder.Dialogs
         private const string DeliverModeStateKey = "deliverymode";
         private const string SkillConversationIdStateKey = "Microsoft.Bot.Builder.Dialogs.SkillDialog.SkillConversationId";
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SkillDialog"/> class.
+        /// </summary>
+        /// <param name="dialogOptions">The skill dialog options.</param>
+        /// <param name="dialogId">The ID of the dialog.</param>
         public SkillDialog(SkillDialogOptions dialogOptions, string dialogId = null)
             : base(dialogId)
         {
             DialogOptions = dialogOptions ?? throw new ArgumentNullException(nameof(dialogOptions));
         }
 
+        /// <summary>
+        /// Gets the skill dialog options.
+        /// </summary>
+        /// <value>
+        /// A <see cref="SkillDialogOptions"/>.
+        /// </value>
         protected SkillDialogOptions DialogOptions { get; }
 
+        /// <inheritdoc/>
         public override async Task<DialogTurnResult> BeginDialogAsync(DialogContext dc, object options = null, CancellationToken cancellationToken = default)
         {
             var dialogArgs = ValidateBeginDialogArgs(options);
@@ -62,6 +74,7 @@ namespace Microsoft.Bot.Builder.Dialogs
             return EndOfTurn;
         }
 
+        /// <inheritdoc/>
         public override async Task<DialogTurnResult> ContinueDialogAsync(DialogContext dc, CancellationToken cancellationToken = default)
         {
             if (!OnValidateActivity(dc.Context.Activity))
@@ -95,6 +108,7 @@ namespace Microsoft.Bot.Builder.Dialogs
             return EndOfTurn;
         }
 
+        /// <inheritdoc/>
         public override async Task RepromptDialogAsync(ITurnContext turnContext, DialogInstance instance, CancellationToken cancellationToken = default)
         {
             // Create and send an envent to the skill so it can resume the dialog.
@@ -110,12 +124,14 @@ namespace Microsoft.Bot.Builder.Dialogs
             await SendToSkillAsync(turnContext, (Activity)repromptEvent, skillConversationId, cancellationToken).ConfigureAwait(false);
         }
 
+        /// <inheritdoc/>
         public override async Task<DialogTurnResult> ResumeDialogAsync(DialogContext dc, DialogReason reason, object result = null, CancellationToken cancellationToken = default)
         {
             await RepromptDialogAsync(dc.Context, dc.ActiveDialog, cancellationToken).ConfigureAwait(false);
             return EndOfTurn;
         }
 
+        /// <inheritdoc/>
         public override async Task EndDialogAsync(ITurnContext turnContext, DialogInstance instance, DialogReason reason, CancellationToken cancellationToken = default)
         {
             // Send of of conversation to the skill if the dialog has been cancelled. 

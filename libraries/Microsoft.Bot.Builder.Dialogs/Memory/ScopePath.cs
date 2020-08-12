@@ -5,6 +5,9 @@ using System;
 
 namespace Microsoft.Bot.Builder.Dialogs
 {
+    /// <summary>
+    /// 
+    /// </summary>
 #pragma warning disable CA1052 // Static holder types should be Static or NotInheritable (we can't change this without breaking binary compat)
     public class ScopePath
 #pragma warning restore CA1052 // Static holder types should be Static or NotInheritable
@@ -54,27 +57,51 @@ namespace Microsoft.Bot.Builder.Dialogs
         /// </summary>
         public const string Turn = "turn";
 
+        /// <summary>
+        /// User scope root path.
+        /// </summary>
         [Obsolete("This property is deprecated, use ScopePath.User instead.")]
         public const string USER = "user";
 
+        /// <summary>
+        /// Conversation scope root path.
+        /// </summary>
         [Obsolete("This property is deprecated, use ScopePath.Conversation instead.")]
         public const string CONVERSATION = "conversation";
 
+        /// <summary>
+        /// Dialog scope root path.
+        /// </summary>
         [Obsolete("This property is deprecated, use ScopePath.Dialog instead.")]
         public const string DIALOG = "dialog";
 
+        /// <summary>
+        /// Dialog class scope root path.
+        /// </summary>
         [Obsolete("This property is deprecated, use ScopePath.DialogClass instead.")]
         public const string DIALOGCLASS = "dialogclass";
 
+        /// <summary>
+        /// This scope root path.
+        /// </summary>
         [Obsolete("This property is deprecated, use ScopePath.This instead.")]
         public const string THIS = "this";
 
+        /// <summary>
+        /// Class scope root path.
+        /// </summary>
         [Obsolete("This property is deprecated, use ScopePath.Class instead.")]
         public const string CLASS = "class";
 
+        /// <summary>
+        /// Settings scope root path.
+        /// </summary>
         [Obsolete("This property is deprecated, use ScopePath.Settings instead.")]
         public const string SETTINGS = "settings";
 
+        /// <summary>
+        /// Turn scope root path.
+        /// </summary>
         [Obsolete("This property is deprecated, use ScopePath.Turn instead.")]
         public const string TURN = "turn";
     }

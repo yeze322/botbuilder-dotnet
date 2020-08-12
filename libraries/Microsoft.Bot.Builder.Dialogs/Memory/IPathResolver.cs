@@ -3,6 +3,9 @@
 
 namespace Microsoft.Bot.Builder.Dialogs.Memory
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public interface IPathResolver
     {
         /// <summary>

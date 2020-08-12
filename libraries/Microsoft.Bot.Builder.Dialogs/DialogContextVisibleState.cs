@@ -13,16 +13,34 @@ namespace Microsoft.Bot.Builder.Dialogs
     [Obsolete("This class is no longer used and is deprecated. Use DialogContext.State.GetMemorySnapshot() to get all visible memory scope objects.", error: false)]
     public class DialogContextVisibleState
     {
+        /// <summary>
+        /// Gets or sets the User property.
+        /// </summary>
+        /// <value>
+        /// Returns a <see cref="IDictionary{TKey, TValue}"/>.
+        /// </value>
         [JsonProperty(PropertyName = "user")]
 #pragma warning disable CA2227 // Collection properties should be read only (we can't change this without breaking binary compat)
         public IDictionary<string, object> User { get; set; }
 #pragma warning restore CA2227 // Collection properties should be read only
 
+        /// <summary>
+        /// Gets or sets the Conversation property.
+        /// </summary>
+        /// <value>
+        /// Returns a <see cref="IDictionary{TKey, TValue}"/>.
+        /// </value>
         [JsonProperty(PropertyName = "conversation")]
 #pragma warning disable CA2227 // Collection properties should be read only (we can't change this without breaking binary compat)
         public IDictionary<string, object> Conversation { get; set; }
 #pragma warning restore CA2227 // Collection properties should be read only
 
+        /// <summary>
+        /// Gets or sets the Dialog property.
+        /// </summary>
+        /// <value>
+        /// Returns a <see cref="IDictionary{TKey, TValue}"/>.
+        /// </value>
         [JsonProperty(PropertyName = "dialog")]
 #pragma warning disable CA2227 // Collection properties should be read only (we can't change this without breaking binary compat)
         public IDictionary<string, object> Dialog { get; set; }

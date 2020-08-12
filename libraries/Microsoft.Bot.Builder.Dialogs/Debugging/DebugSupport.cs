@@ -11,6 +11,10 @@ namespace Microsoft.Bot.Builder.Dialogs.Debugging
     /// </summary>
     public static class DebugSupport
     {
+        /// <summary>
+        /// Gets or sets the <see cref="ISourceMap"/> for debugging.
+        /// </summary>
+        /// <value>A <see cref="ISourceMap"/>.</value>
         public static ISourceMap SourceMap { get; set; } = Debugging.SourceMap.Instance;
 
         /// <summary>

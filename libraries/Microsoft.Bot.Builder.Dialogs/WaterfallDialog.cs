@@ -55,6 +55,7 @@ namespace Microsoft.Bot.Builder.Dialogs
             return this;
         }
 
+        /// <inheritdoc/>
         public override async Task<DialogTurnResult> BeginDialogAsync(DialogContext dc, object options = null, CancellationToken cancellationToken = default)
         {
             if (options is CancellationToken)
@@ -86,6 +87,7 @@ namespace Microsoft.Bot.Builder.Dialogs
             return await RunStepAsync(dc, 0, DialogReason.BeginCalled, null, cancellationToken).ConfigureAwait(false);
         }
 
+        /// <inheritdoc/>
         public override async Task<DialogTurnResult> ContinueDialogAsync(DialogContext dc, CancellationToken cancellationToken = default)
         {
             if (dc == null)
@@ -103,6 +105,7 @@ namespace Microsoft.Bot.Builder.Dialogs
             return await ResumeDialogAsync(dc, DialogReason.ContinueCalled, dc.Context.Activity.Text, cancellationToken).ConfigureAwait(false);
         }
 
+        /// <inheritdoc/>
         public override async Task<DialogTurnResult> ResumeDialogAsync(DialogContext dc, DialogReason reason, object result, CancellationToken cancellationToken = default)
         {
             if (dc == null)
@@ -165,6 +168,12 @@ namespace Microsoft.Bot.Builder.Dialogs
             return Task.CompletedTask;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="stepContext"></param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         protected virtual async Task<DialogTurnResult> OnStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
             var stepName = WaterfallStepName(stepContext.Index);
@@ -179,6 +188,15 @@ namespace Microsoft.Bot.Builder.Dialogs
             return await _steps[stepContext.Index](stepContext, cancellationToken).ConfigureAwait(false);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="dc"></param>
+        /// <param name="index"></param>
+        /// <param name="reason"></param>
+        /// <param name="result"></param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         protected async Task<DialogTurnResult> RunStepAsync(DialogContext dc, int index, DialogReason reason, object result, CancellationToken cancellationToken)
         {
             if (dc == null)

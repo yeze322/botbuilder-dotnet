@@ -14,6 +14,10 @@ namespace Microsoft.Bot.Builder.Dialogs.Prompts
     {
         private static readonly string[] SupportedLocales = GetSupportedCultures().Select(c => c.Locale).ToArray();
 
+        /// <summary>
+        /// Gets the Bulgarian culture model.
+        /// </summary>
+        /// <value>A <see cref="PromptCultureModel"/>.</value>
         public static PromptCultureModel Bulgarian =>
             new PromptCultureModel
             {
@@ -25,6 +29,10 @@ namespace Microsoft.Bot.Builder.Dialogs.Prompts
                 YesInLanguage = "да",
             };
 
+        /// <summary>
+        /// Gets the Chinese culture model.
+        /// </summary>
+        /// <value>A <see cref="PromptCultureModel"/>.</value>
         public static PromptCultureModel Chinese =>
             new PromptCultureModel
             {
@@ -36,6 +44,10 @@ namespace Microsoft.Bot.Builder.Dialogs.Prompts
                 YesInLanguage = "是的",
             };
 
+        /// <summary>
+        /// Gets the Dutch culture model.
+        /// </summary>
+        /// <value>A <see cref="PromptCultureModel"/>.</value>
         public static PromptCultureModel Dutch =>
             new PromptCultureModel
             {
@@ -47,6 +59,10 @@ namespace Microsoft.Bot.Builder.Dialogs.Prompts
                 YesInLanguage = "Ja",
             };
 
+        /// <summary>
+        /// Gets the English culture model.
+        /// </summary>
+        /// <value>A <see cref="PromptCultureModel"/>.</value>
         public static PromptCultureModel English =>
             new PromptCultureModel
             {
@@ -58,6 +74,10 @@ namespace Microsoft.Bot.Builder.Dialogs.Prompts
                 YesInLanguage = "Yes",
             };
 
+        /// <summary>
+        /// Gets the French culture model.
+        /// </summary>
+        /// <value>A <see cref="PromptCultureModel"/>.</value>
         public static PromptCultureModel French =>
             new PromptCultureModel
             {
@@ -69,6 +89,10 @@ namespace Microsoft.Bot.Builder.Dialogs.Prompts
                 YesInLanguage = "Oui",
             };
 
+        /// <summary>
+        /// Gets the German culture model.
+        /// </summary>
+        /// <value>A <see cref="PromptCultureModel"/>.</value>
         public static PromptCultureModel German =>
             new PromptCultureModel
             {
@@ -80,6 +104,10 @@ namespace Microsoft.Bot.Builder.Dialogs.Prompts
                 YesInLanguage = "Ja",
             };
 
+        /// <summary>
+        /// Gets the Hindi culture model.
+        /// </summary>
+        /// <value>A <see cref="PromptCultureModel"/>.</value>
         public static PromptCultureModel Hindi =>
             new PromptCultureModel
             {
@@ -91,6 +119,10 @@ namespace Microsoft.Bot.Builder.Dialogs.Prompts
                 YesInLanguage = "हां",
             };
 
+        /// <summary>
+        /// Gets the Italian culture model.
+        /// </summary>
+        /// <value>A <see cref="PromptCultureModel"/>.</value>
         public static PromptCultureModel Italian =>
             new PromptCultureModel
             {
@@ -102,6 +134,10 @@ namespace Microsoft.Bot.Builder.Dialogs.Prompts
                 YesInLanguage = "Si",
             };
 
+        /// <summary>
+        /// Gets the Japnese culture model.
+        /// </summary>
+        /// <value>A <see cref="PromptCultureModel"/>.</value>
         public static PromptCultureModel Japanese =>
             new PromptCultureModel
             {
@@ -113,6 +149,10 @@ namespace Microsoft.Bot.Builder.Dialogs.Prompts
                 YesInLanguage = "はい",
             };
 
+        /// <summary>
+        /// Gets the Korean culture model.
+        /// </summary>
+        /// <value>A <see cref="PromptCultureModel"/>.</value>
         public static PromptCultureModel Korean =>
             new PromptCultureModel
             {
@@ -124,6 +164,10 @@ namespace Microsoft.Bot.Builder.Dialogs.Prompts
                 YesInLanguage = "예",
             };
 
+        /// <summary>
+        /// Gets the Portuguese culture model.
+        /// </summary>
+        /// <value>A <see cref="PromptCultureModel"/>.</value>
         public static PromptCultureModel Portuguese =>
             new PromptCultureModel
             {
@@ -135,6 +179,10 @@ namespace Microsoft.Bot.Builder.Dialogs.Prompts
                 YesInLanguage = "Sim",
             };
 
+        /// <summary>
+        /// Gets the Spanish culture model.
+        /// </summary>
+        /// <value>A <see cref="PromptCultureModel"/>.</value>
         public static PromptCultureModel Spanish =>
             new PromptCultureModel
             {
@@ -146,6 +194,10 @@ namespace Microsoft.Bot.Builder.Dialogs.Prompts
                 YesInLanguage = "Sí",
             };
 
+        /// <summary>
+        /// Gets the Swedish culture model.
+        /// </summary>
+        /// <value>A <see cref="PromptCultureModel"/>.</value>
         public static PromptCultureModel Swedish =>
             new PromptCultureModel
             {
@@ -157,6 +209,10 @@ namespace Microsoft.Bot.Builder.Dialogs.Prompts
                 YesInLanguage = "Ja",
             };
 
+        /// <summary>
+        /// Gets the Turkish culture model.
+        /// </summary>
+        /// <value>A <see cref="PromptCultureModel"/>.</value>
         public static PromptCultureModel Turkish =>
             new PromptCultureModel
             {
@@ -207,6 +263,10 @@ namespace Microsoft.Bot.Builder.Dialogs.Prompts
             return cultureCode;
         }
 
+        /// <summary>
+        /// Gets the list of supported <see cref="PromptCultureModel"/>s.
+        /// </summary>
+        /// <returns>A list of <see cref="PromptCultureModel"/>.</returns>
         public static PromptCultureModel[] GetSupportedCultures() => new PromptCultureModel[]
         {
             Bulgarian,

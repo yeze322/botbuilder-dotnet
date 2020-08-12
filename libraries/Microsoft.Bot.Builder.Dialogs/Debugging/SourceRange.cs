@@ -72,8 +72,16 @@ namespace Microsoft.Bot.Builder.Dialogs.Debugging
         /// </value>
         public SourcePoint EndPoint { get; set; }
 
+        /// <summary>
+        /// Outputs the file path, startpoint, and endpoint.
+        /// </summary>
+        /// <returns>A string.</returns>
         public override string ToString() => $"{System.IO.Path.GetFileName(Path)}:{StartPoint}->{EndPoint}";
 
+        /// <summary>
+        /// Creates a deep copy of the current <see cref="SourceRange"/>. 
+        /// </summary>
+        /// <returns>A <see cref="SourceRange"/>.</returns>
         public SourceRange DeepClone()
             => new SourceRange()
             {
@@ -83,12 +91,22 @@ namespace Microsoft.Bot.Builder.Dialogs.Debugging
                 EndPoint = EndPoint.DeepClone(),
             };
 
+        /// <summary>
+        /// Checks to see if the two objects are equal.
+        /// </summary>
+        /// <param name="obj">The object used for comparison.</param>
+        /// <returns>A bool.</returns>
         public override bool Equals(object obj)
         {
             // Auto-generated
             return Equals(obj as SourceRange);
         }
 
+        /// <summary>
+        /// Checks to see if the two objects are equal.
+        /// </summary>
+        /// <param name="other">The <see cref="SourceRange"/> used for comparison.</param>
+        /// <returns>A bool.</returns>
         public bool Equals(SourceRange other)
         {
             // Auto-generated
@@ -98,6 +116,10 @@ namespace Microsoft.Bot.Builder.Dialogs.Debugging
                    EqualityComparer<SourcePoint>.Default.Equals(EndPoint, other.EndPoint);
         }
 
+        /// <summary>
+        /// Gets the hashcode for the object.
+        /// </summary>
+        /// <returns>An int.</returns>
         public override int GetHashCode()
         {
             // Auto-generated

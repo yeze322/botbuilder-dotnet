@@ -16,6 +16,9 @@ namespace Microsoft.Bot.Builder.Dialogs
     /// which provides an inner dialog stack that is hidden from the parent dialog.</remarks>
     public class ComponentDialog : DialogContainer
     {
+        /// <summary>
+        /// Constant string representing persisted dialog state.
+        /// </summary>
         public const string PersistedDialogState = "dialogs";
 
         private bool _initialized;
@@ -29,6 +32,12 @@ namespace Microsoft.Bot.Builder.Dialogs
         {
         }
 
+        /// <summary>
+        /// Gets or sets the initial dialog's id.
+        /// </summary>
+        /// <value>
+        /// A string.
+        /// </value>
         public string InitialDialogId { get; set; }
 
         /// <summary>
@@ -226,11 +235,21 @@ namespace Microsoft.Bot.Builder.Dialogs
             return this;
         }
 
+        /// <summary>
+        /// Creates a child context on the dialog context.
+        /// </summary>
+        /// <param name="dc">The dialog context.</param>
+        /// <returns>The updated <see cref="DialogContext"/> with the new child.</returns>
         public override DialogContext CreateChildContext(DialogContext dc)
         {
             return this.CreateInnerDc(dc, dc.ActiveDialog);
         }
 
+        /// <summary>
+        /// Guarantees the dialog context is initialized.
+        /// </summary>
+        /// <param name="outerDc">The dialog context to be initialized.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         protected async Task EnsureInitializedAsync(DialogContext outerDc)
         {
             if (!this._initialized)
@@ -240,6 +259,11 @@ namespace Microsoft.Bot.Builder.Dialogs
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="dc">The dialog to be initialized.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         protected virtual Task OnInitializeAsync(DialogContext dc)
         {
             if (this.InitialDialogId == null)

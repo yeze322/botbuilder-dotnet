@@ -210,6 +210,7 @@ namespace Microsoft.Bot.Builder.Dialogs
             await OnPromptAsync(turnContext, state, options, false, cancellationToken).ConfigureAwait(false);
         }
 
+        /// <inheritdoc/>
         protected override async Task<bool> OnPreBubbleEventAsync(DialogContext dc, DialogEvent e, CancellationToken cancellationToken)
         {
             if (e.Name == DialogEvents.ActivityReceived && dc.Context.Activity.Type == ActivityTypes.Message)

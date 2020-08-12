@@ -11,11 +11,15 @@ namespace Microsoft.Bot.Builder.Dialogs.Memory.Scopes
     /// </summary>
     public class ThisMemoryScope : MemoryScope
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ThisMemoryScope"/> class.
+        /// </summary>
         public ThisMemoryScope()
             : base(ScopePath.This)
         {
         }
 
+        /// <inheritdoc/>
         public override object GetMemory(DialogContext dc)
         {
             if (dc == null)
@@ -26,6 +30,7 @@ namespace Microsoft.Bot.Builder.Dialogs.Memory.Scopes
             return dc.ActiveDialog?.State;
         }
 
+        /// <inheritdoc/>
         public override void SetMemory(DialogContext dc, object memory)
         {
             if (dc == null)

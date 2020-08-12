@@ -6,6 +6,9 @@ using Microsoft.Bot.Builder.Dialogs.Memory.Scopes;
 
 namespace Microsoft.Bot.Builder.Dialogs.Memory
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class DialogStateManagerConfiguration
     {
         /// <summary>

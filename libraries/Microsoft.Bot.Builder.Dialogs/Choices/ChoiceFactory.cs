@@ -143,6 +143,14 @@ namespace Microsoft.Bot.Builder.Dialogs.Choices
             return List(ToChoices(choices), text, speak, options);
         }
 
+        /// <summary>
+        /// Helper method to create an <see cref="Activity"/> with choices.
+        /// </summary>
+        /// <param name="choices">The list of <see cref="Choice"/> objects.</param>
+        /// <param name="text">The text for the activity.</param>
+        /// <param name="speak"></param>
+        /// <param name="options">The <see cref="ChoiceFactoryOptions"/> for the activity.</param>
+        /// <returns>An <see cref="Activity"/>. </returns>
         public static Activity List(IList<Choice> choices, string text = null, string speak = null, ChoiceFactoryOptions options = null)
         {
             choices ??= new List<Choice>();
@@ -181,17 +189,38 @@ namespace Microsoft.Bot.Builder.Dialogs.Choices
             return MessageFactory.Text(txtBuilder.ToString(), speak, InputHints.ExpectingInput);
         }
 
+        /// <summary>
+        /// A helper method that creates <see cref="IMessageActivity"/> with suggested actions.
+        /// </summary>
+        /// <param name="choices">A list of strings of choices.</param>
+        /// <param name="text">The text for the activity.</param>
+        /// <param name="speak"></param>
+        /// <returns>An <see cref="IMessageActivity"/>.</returns>
         public static IMessageActivity SuggestedAction(IList<string> choices, string text = null, string speak = null)
         {
             return SuggestedAction(ToChoices(choices), text, speak);
         }
 
+        /// <summary>
+        /// Helper method to create an <see cref="IMessageActivity"/> with suggested actions.
+        /// </summary>
+        /// <param name="choices">A list of <see cref="Choice"/> objects.</param>
+        /// <param name="text">The text for the activity.</param>
+        /// <param name="speak"></param>
+        /// <returns>An <see cref="IMessageActivity"/>.</returns>
         public static IMessageActivity SuggestedAction(IList<Choice> choices, string text = null, string speak = null)
         {
             // Return activity with choices as suggested actions
             return MessageFactory.SuggestedActions(ExtractActions(choices), text, speak, InputHints.ExpectingInput);
         }
 
+        /// <summary>
+        /// Creates an activity with a hero card attachment.
+        /// </summary>
+        /// <param name="choices">The list of choices for the hero card.</param>
+        /// <param name="text">The text on the hero card.</param>
+        /// <param name="speak"></param>
+        /// <returns>A <see cref="IMessageActivity"/> representing an activity.</returns>
         public static IMessageActivity HeroCard(IList<Choice> choices, string text = null, string speak = null)
         {
             var attachments = new List<Attachment>
@@ -203,6 +232,11 @@ namespace Microsoft.Bot.Builder.Dialogs.Choices
             return MessageFactory.Attachment(attachments, null, speak, InputHints.ExpectingInput);
         }
 
+        /// <summary>
+        /// Helper method that converts a list of strings into a list of <see cref="Choice"/>.
+        /// </summary>
+        /// <param name="choices">A list of string choices.</param>
+        /// <returns>A list of <see cref="Choice"/>.</returns>
         public static IList<Choice> ToChoices(IList<string> choices)
         {
             return choices == null

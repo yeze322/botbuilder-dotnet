@@ -14,6 +14,11 @@ namespace Microsoft.Bot.Builder.Dialogs.Memory.Scopes
     /// </summary>
     public abstract class MemoryScope
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MemoryScope"/> class.
+        /// </summary>
+        /// <param name="name">The name of the scope.</param>
+        /// <param name="includeInSnapshot">Flag for including a memory snapshot.</param>
         public MemoryScope(string name, bool includeInSnapshot = true)
         {
             this.IncludeInSnapshot = includeInSnapshot;
