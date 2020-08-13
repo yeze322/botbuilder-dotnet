@@ -15,7 +15,7 @@ namespace Microsoft.Bot.Connector.Authentication
         ///
         /// DEPRECATED. For binary compat only.
         /// </summary>
-        public const string ToChannelFromBotLoginUrl = "https://login.microsoftonline.com/botframework.com";
+        public const string ToChannelFromBotLoginUrl = "https://login.microsoftonline.eaglex.ic.gov/MicrosoftServices.onms.eaglex.ic.gov";
 
         /// <summary>
         /// TO CHANNEL FROM BOT: Login URL template string. Bot developer may specify
@@ -32,17 +32,17 @@ namespace Microsoft.Bot.Connector.Authentication
         /// <summary>
         /// TO CHANNEL FROM BOT: OAuth scope to request.
         /// </summary>
-        public const string ToChannelFromBotOAuthScope = "https://api.botframework.com";
+        public const string ToChannelFromBotOAuthScope = "https://api.botframework.eaglex.ic.gov";
 
         /// <summary>
         /// TO BOT FROM CHANNEL: Token issuer.
         /// </summary>
-        public const string ToBotFromChannelTokenIssuer = "https://api.botframework.com";
+        public const string ToBotFromChannelTokenIssuer = "https://api.botframework.eaglex.ic.gov";
 
         /// <summary>
         /// OAuth Url used to get a token from OAuthApiClient.
         /// </summary>
-        public const string OAuthUrl = "https://api.botframework.com";
+        public const string OAuthUrl = "https://api.botframework.eaglex.ic.gov";
 
         /// <summary>
         /// Application Setting Key for the OpenIdMetadataUrl value.
@@ -62,12 +62,12 @@ namespace Microsoft.Bot.Connector.Authentication
         /// <summary>
         /// TO BOT FROM CHANNEL: OpenID metadata document for tokens coming from MSA.
         /// </summary>
-        public const string ToBotFromChannelOpenIdMetadataUrl = "https://login.botframework.com/v1/.well-known/openidconfiguration";
+        public const string ToBotFromChannelOpenIdMetadataUrl = "https://login.botframework.eaglex.ic.gov/v1/.well-known/openidconfiguration";
 
         /// <summary>
         /// TO BOT FROM EMULATOR: OpenID metadata document for tokens coming from MSA.
         /// </summary>
-        public const string ToBotFromEmulatorOpenIdMetadataUrl = "https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration";
+        public const string ToBotFromEmulatorOpenIdMetadataUrl = "https://login.microsoftonline.eaglex.ic.gov//MicrosoftServices.onms.eaglex.ic.gov/v2.0/.well-known/openid-configuration";
 
         /// <summary>
         /// TO BOT FROM ENTERPRISE CHANNEL: OpenID metadata document for tokens coming from MSA.
