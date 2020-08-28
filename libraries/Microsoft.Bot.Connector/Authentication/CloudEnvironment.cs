@@ -1,9 +1,11 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Bot.Schema;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Microsoft.Bot.Connector.Authentication
 {
@@ -44,7 +46,7 @@ namespace Microsoft.Bot.Connector.Authentication
         /// <summary>
         /// US National Governement Cloud.
         /// </summary>
-        public static readonly CloudEnvironment UsNatGovernment = new CloudEnvironment(
+        private static readonly CloudEnvironment UsNatGovernment = new CloudEnvironment(
             UsNatGovernmentAuthenticationConstants.ChannelService,
             true,
             UsNatGovernmentAuthenticationConstants.ToChannelFromBotLoginUrl,
@@ -58,7 +60,7 @@ namespace Microsoft.Bot.Connector.Authentication
         /// <summary>
         /// US Secure Governement Cloud.
         /// </summary>
-        public static readonly CloudEnvironment UsSecGovernment = new CloudEnvironment(
+        private static readonly CloudEnvironment UsSecGovernment = new CloudEnvironment(
             UsSecGovernmentAuthenticationConstants.ChannelService,
             true,
             UsSecGovernmentAuthenticationConstants.ToChannelFromBotLoginUrl,
@@ -210,28 +212,40 @@ namespace Microsoft.Bot.Connector.Authentication
         }
 
         /// <summary>
+        /// Get appropriate TokenValidationParameters for JwtTokenExtractor.
+        /// </summary>
+        /// <returns>TokenValidationParameters.</returns>
+        public TokenValidationParameters GetTokenValidationParameters()
+        {
+            return new TokenValidationParameters()
+            {
+                ValidateIssuer = true,
+                ValidIssuers = new[] { ToBotFromChannelTokenIssuer },
+
+                // Audience validation takes place in JwtTokenExtractor
+                ValidateAudience = false,
+                ValidateLifetime = true,
+                ClockSkew = TimeSpan.FromMinutes(5),
+                RequireSignedTokens = true,
+                ValidateIssuerSigningKey = true,
+            };
+        }
+
+        /// <summary>
         /// Gets an empty MicrosoftAppCredential for a particular channel service constant.
         /// </summary>
         /// <param name="channelService">The channel service.</param>
         /// <returns>The empty credential.</returns>
-        public static MicrosoftAppCredentials GetEmptyCredential(string channelService)
+        private static MicrosoftAppCredentials GetEmptyCredential(string channelService)
         {
             var cloudEnvironment = GetCloudEnvironment(channelService);
-            if (cloudEnvironment == UsGovernment)
+            if (cloudEnvironment == CloudEnvironment.PublicCloud)
             {
-                return MicrosoftGovernmentAppCredentials.Empty;
-            }
-            else if (cloudEnvironment == UsNatGovernment)
-            {
-                return MicrosoftGovernmentAppCredentials.UsNatEmpty;
-            }
-            else if (cloudEnvironment == UsSecGovernment)
-            {
-                return MicrosoftGovernmentAppCredentials.UsSecEmpty;
+                return MicrosoftAppCredentials.Empty;
             }
             else
             {
-                return MicrosoftAppCredentials.Empty;
+                return new MicrosoftGovernmentAppCredentials(null, null, null, null, cloudEnvironment.ToChannelFromBotOAuthScope, cloudEnvironment.ToChannelFromBotLoginUrl);
             }
         }
     }

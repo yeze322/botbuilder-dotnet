@@ -75,6 +75,7 @@ namespace Microsoft.Bot.Connector.Authentication
 #pragma warning disable CA1056 // Uri properties should not be strings (we can't change this without breaking binary compat)
         public static string OpenIdMetadataUrl { get; set; } = GovernmentAuthenticationConstants.ToBotFromChannelOpenIdMetadataUrl;
 
+        /*
         /// <summary>
         /// Gets or sets UsNatOpenIdMetadataUrl.
         /// </summary>
@@ -91,6 +92,7 @@ namespace Microsoft.Bot.Connector.Authentication
         /// </value>
         public static Uri UsSecOpenIdMetadataUrl { get; set; } = new Uri(UsSecGovernmentAuthenticationConstants.ToBotFromChannelOpenIdMetadataUrl);
 #pragma warning restore CA1056 // Uri properties should not be strings
+        */
 
         /// <summary>
         /// Validate the incoming Auth Header as a token sent from a Bot Framework Government Channel Service.
@@ -151,28 +153,8 @@ namespace Microsoft.Bot.Connector.Authentication
                 throw new ArgumentNullException(nameof(authConfig));
             }
 
-            TokenValidationParameters tokenValidationParameters = null;
-            string openIdMetadataUrl = null;
-
-            if (cloudEnvironment == CloudEnvironment.UsGovernment)
-            {
-                tokenValidationParameters = ToBotFromGovernmentChannelTokenValidationParameters;
-                openIdMetadataUrl = OpenIdMetadataUrl;
-            }
-            else if (cloudEnvironment == CloudEnvironment.UsNatGovernment)
-            {
-                tokenValidationParameters = ToBotFromUsNatGovernmentChannelTokenValidationParameters;
-                openIdMetadataUrl = UsNatOpenIdMetadataUrl.OriginalString;
-            }
-            else if (cloudEnvironment == CloudEnvironment.UsSecGovernment)
-            {
-                tokenValidationParameters = ToBotFromUsSecGovernmentChannelTokenValidationParameters;
-                openIdMetadataUrl = UsSecOpenIdMetadataUrl.OriginalString;
-            }
-            else
-            {
-                throw new ArgumentException(nameof(CloudEnvironment));
-            }
+            var tokenValidationParameters = cloudEnvironment.GetTokenValidationParameters();
+            var openIdMetadataUrl = cloudEnvironment.ToBotFromChannelOpenIdMetadataUrl;
 
             var tokenExtractor = new JwtTokenExtractor(
                 httpClient,
@@ -279,8 +261,9 @@ namespace Microsoft.Bot.Connector.Authentication
         public static void SetOpenIdMetadataUrl(string url)
         {
             OpenIdMetadataUrl = url;
-            UsNatOpenIdMetadataUrl = new Uri(url);
-            UsSecOpenIdMetadataUrl = new Uri(url);
+
+            //UsNatOpenIdMetadataUrl = new Uri(url);
+            //UsSecOpenIdMetadataUrl = new Uri(url);
         }
     }
 }

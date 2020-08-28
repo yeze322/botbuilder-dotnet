@@ -9,7 +9,7 @@ namespace Microsoft.Bot.Connector.Authentication
     /// <summary>
     /// A simple channel provider with basic configuration parameters to connect to a Bot Framework channel service.
     /// </summary>
-    public class SimpleChannelProvider : IChannelProvider
+    public class SimpleChannelProvider : IChannelProvider, ICloudEnvironmentProvider
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="SimpleChannelProvider"/> class.
@@ -43,6 +43,15 @@ namespace Microsoft.Bot.Connector.Authentication
         public Task<string> GetChannelServiceAsync()
         {
             return Task.FromResult(this.ChannelService);
+        }
+
+        /// <summary>
+        /// Gets the cloud environment to be used.
+        /// </summary>
+        /// <returns>The cloud environment property.</returns>
+        public Task<CloudEnvironment> GetCloudEnvironmentAsync()
+        {
+            return Task.FromResult(CloudEnvironment.PublicCloud);
         }
 
         /// <summary>

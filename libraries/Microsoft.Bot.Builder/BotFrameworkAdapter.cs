@@ -1477,10 +1477,27 @@ namespace Microsoft.Bot.Builder
         {
             // Get the password from the credential provider
             var appPassword = await CredentialProvider.GetAppPasswordAsync(appId).ConfigureAwait(false);
+
             if (ChannelProvider != null)
             {
                 var channelService = await ChannelProvider.GetChannelServiceAsync().ConfigureAwait(false);
-                return new MicrosoftGovernmentAppCredentials(appId, appPassword, HttpClient, Logger, channelService, oAuthScope);
+
+                // pull the constants from from CloudEnvironment
+                // TODO: create the CloudEnvironment instance from a ICloudEnvironmentProvider (obtained by casting the ChannelProvider)
+
+                var cloudEnvironment = channelService == GovernmentAuthenticationConstants.ChannelService
+                        ?
+                    CloudEnvironment.UsGovernment
+                        :
+                    CloudEnvironment.GetCloudEnvironment(channelService);
+
+                return new MicrosoftGovernmentAppCredentials(
+                    appId,
+                    appPassword,
+                    HttpClient,
+                    Logger,
+                    oAuthScope ?? cloudEnvironment.ToChannelFromBotOAuthScope,
+                    cloudEnvironment.ToChannelFromBotLoginUrl);
             }
 
             return new MicrosoftAppCredentials(appId, appPassword, HttpClient, Logger, oAuthScope);
