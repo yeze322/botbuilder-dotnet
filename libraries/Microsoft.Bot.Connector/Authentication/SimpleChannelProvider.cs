@@ -51,7 +51,8 @@ namespace Microsoft.Bot.Connector.Authentication
         /// <returns>The cloud environment property.</returns>
         public Task<CloudEnvironment> GetCloudEnvironmentAsync()
         {
-            return Task.FromResult(CloudEnvironment.PublicCloud);
+            // TODO: load the actual CloudEnvironment properties from config
+            return Task.FromResult(CloudEnvironment.GetCloudEnvironment(this.ChannelService));
         }
 
         /// <summary>
