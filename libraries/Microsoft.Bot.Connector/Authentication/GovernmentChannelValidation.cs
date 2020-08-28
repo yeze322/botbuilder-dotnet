@@ -193,6 +193,20 @@ namespace Microsoft.Bot.Connector.Authentication
         /// <param name="identity">The claims identity to validate.</param>
         /// <param name="credentials">The user defined set of valid credentials, such as the AppId.</param>
         /// <param name="serviceUrl">The service url from the request.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+#pragma warning disable UseAsyncSuffix // Use Async suffix (can't change this without breaking binary compat)
+        public static Task ValidateIdentity(ClaimsIdentity identity, ICredentialProvider credentials, string serviceUrl)
+#pragma warning restore UseAsyncSuffix // Use Async suffix
+        {
+            return ValidateIdentity(identity, credentials, serviceUrl, CloudEnvironment.UsGovernment);
+        }
+
+        /// <summary>
+        /// Validate the ClaimsIdentity as sent from a Bot Framework Government Channel Service.
+        /// </summary>
+        /// <param name="identity">The claims identity to validate.</param>
+        /// <param name="credentials">The user defined set of valid credentials, such as the AppId.</param>
+        /// <param name="serviceUrl">The service url from the request.</param>
         /// <param name="cloudEnvironment">The cloud environment.</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
 #pragma warning disable UseAsyncSuffix // Use Async suffix (can't change this without breaking binary compat)
@@ -217,7 +231,7 @@ namespace Microsoft.Bot.Connector.Authentication
             // Async validation.
 
             // Look for the "aud" claim, but only if issued from the Bot Framework
-            Claim audienceClaim = identity.Claims.FirstOrDefault(
+            var audienceClaim = identity.Claims.FirstOrDefault(
                 c => c.Issuer == cloudEnvironment.ToBotFromChannelTokenIssuer && c.Type == AuthenticationConstants.AudienceClaim);
 
             if (audienceClaim == null)
@@ -228,7 +242,7 @@ namespace Microsoft.Bot.Connector.Authentication
 
             // The AppId from the claim in the token must match the AppId specified by the developer.
             // In this case, the token is destined for the app, so we find the app ID in the audience claim.
-            string appIdFromClaim = audienceClaim.Value;
+            var appIdFromClaim = audienceClaim.Value;
             if (string.IsNullOrWhiteSpace(appIdFromClaim))
             {
                 // Claim is present, but doesn't have a value. Not Authorized.
