@@ -1480,16 +1480,9 @@ namespace Microsoft.Bot.Builder
 
             if (ChannelProvider != null)
             {
-                var channelService = await ChannelProvider.GetChannelServiceAsync().ConfigureAwait(false);
+                // TODO: have the CloudEnvironment become a factory for AppCredentials rather that just the property bag it acting as here.
 
-                // pull the constants from from CloudEnvironment
-                // TODO: create the CloudEnvironment instance from a ICloudEnvironmentProvider (obtained by casting the ChannelProvider)
-
-                var cloudEnvironment = channelService == GovernmentAuthenticationConstants.ChannelService
-                        ?
-                    CloudEnvironment.UsGovernment
-                        :
-                    CloudEnvironment.GetCloudEnvironment(channelService);
+                var cloudEnvironment = await CloudEnvironment.GetCloudEnvironmentAsync(ChannelProvider).ConfigureAwait(false);
 
                 return new MicrosoftGovernmentAppCredentials(
                     appId,

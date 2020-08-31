@@ -33,40 +33,6 @@ namespace Microsoft.Bot.Connector.Authentication
             };
 
         /// <summary>
-        /// TO BOT FROM USNAT GOVERNMENT CHANNEL: Token validation parameters when connecting to a bot.
-        /// </summary>
-        public static readonly TokenValidationParameters ToBotFromUsNatGovernmentChannelTokenValidationParameters =
-            new TokenValidationParameters()
-            {
-                ValidateIssuer = true,
-                ValidIssuers = new[] { UsNatGovernmentAuthenticationConstants.ToBotFromChannelTokenIssuer },
-
-                // Audience validation takes place in JwtTokenExtractor
-                ValidateAudience = false,
-                ValidateLifetime = true,
-                ClockSkew = TimeSpan.FromMinutes(5),
-                RequireSignedTokens = true,
-                ValidateIssuerSigningKey = true,
-            };
-
-        /// <summary>
-        /// TO BOT FROM USSEC GOVERNMENT CHANNEL: Token validation parameters when connecting to a bot.
-        /// </summary>
-        public static readonly TokenValidationParameters ToBotFromUsSecGovernmentChannelTokenValidationParameters =
-            new TokenValidationParameters()
-            {
-                ValidateIssuer = true,
-                ValidIssuers = new[] { UsSecGovernmentAuthenticationConstants.ToBotFromChannelTokenIssuer },
-
-                // Audience validation takes place in JwtTokenExtractor
-                ValidateAudience = false,
-                ValidateLifetime = true,
-                ClockSkew = TimeSpan.FromMinutes(5),
-                RequireSignedTokens = true,
-                ValidateIssuerSigningKey = true,
-            };
-
-        /// <summary>
         /// Gets or sets the metadata address.
         /// </summary>
         /// <value>
@@ -74,25 +40,6 @@ namespace Microsoft.Bot.Connector.Authentication
         /// </value>
 #pragma warning disable CA1056 // Uri properties should not be strings (we can't change this without breaking binary compat)
         public static string OpenIdMetadataUrl { get; set; } = GovernmentAuthenticationConstants.ToBotFromChannelOpenIdMetadataUrl;
-
-        /*
-        /// <summary>
-        /// Gets or sets UsNatOpenIdMetadataUrl.
-        /// </summary>
-        /// <value>
-        /// UsNatOpenIdMetadataUrl.
-        /// </value>
-        public static Uri UsNatOpenIdMetadataUrl { get; set; } = new Uri(UsNatGovernmentAuthenticationConstants.ToBotFromChannelOpenIdMetadataUrl);
-
-        /// <summary>
-        /// Gets or sets UsSecOpenIdMetadataUrl.
-        /// </summary>
-        /// <value>
-        /// UsSecOpenIdMetadataUrl.
-        /// </value>
-        public static Uri UsSecOpenIdMetadataUrl { get; set; } = new Uri(UsSecGovernmentAuthenticationConstants.ToBotFromChannelOpenIdMetadataUrl);
-#pragma warning restore CA1056 // Uri properties should not be strings
-        */
 
         /// <summary>
         /// Validate the incoming Auth Header as a token sent from a Bot Framework Government Channel Service.

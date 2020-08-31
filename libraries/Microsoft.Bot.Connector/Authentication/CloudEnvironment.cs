@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.using System;
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Bot.Schema;
 using Microsoft.IdentityModel.Tokens;
@@ -44,34 +42,18 @@ namespace Microsoft.Bot.Connector.Authentication
             CallerIdConstants.USGovChannel);
 
         /// <summary>
-        /// US National Governement Cloud.
+        /// Initializes a new instance of the <see cref="CloudEnvironment"/> class.
         /// </summary>
-        private static readonly CloudEnvironment UsNatGovernment = new CloudEnvironment(
-            UsNatGovernmentAuthenticationConstants.ChannelService,
-            true,
-            UsNatGovernmentAuthenticationConstants.ToChannelFromBotLoginUrl,
-            UsNatGovernmentAuthenticationConstants.ToChannelFromBotOAuthScope,
-            UsNatGovernmentAuthenticationConstants.ToBotFromChannelTokenIssuer,
-            UsNatGovernmentAuthenticationConstants.OAuthUrlGov,
-            UsNatGovernmentAuthenticationConstants.ToBotFromChannelOpenIdMetadataUrl,
-            UsNatGovernmentAuthenticationConstants.ToBotFromEmulatorOpenIdMetadataUrl,
-            CallerIdConstants.USNatChannel);
-
-        /// <summary>
-        /// US Secure Governement Cloud.
-        /// </summary>
-        private static readonly CloudEnvironment UsSecGovernment = new CloudEnvironment(
-            UsSecGovernmentAuthenticationConstants.ChannelService,
-            true,
-            UsSecGovernmentAuthenticationConstants.ToChannelFromBotLoginUrl,
-            UsSecGovernmentAuthenticationConstants.ToChannelFromBotOAuthScope,
-            UsSecGovernmentAuthenticationConstants.ToBotFromChannelTokenIssuer,
-            UsSecGovernmentAuthenticationConstants.OAuthUrlGov,
-            UsSecGovernmentAuthenticationConstants.ToBotFromChannelOpenIdMetadataUrl,
-            UsSecGovernmentAuthenticationConstants.ToBotFromEmulatorOpenIdMetadataUrl,
-            CallerIdConstants.USSecChannel);
-
-        private CloudEnvironment(
+        /// <param name="channelService">The channelService identifier.</param>
+        /// <param name="isGovernment">Flag indicating whether this is a government cloud.</param>
+        /// <param name="toChannelFromBotLoginUrl">The toChannelFromBotLoginUrl.</param>
+        /// <param name="toChannelFromBotOAuthScope">The toChannelFromBotOAuthScope.</param>
+        /// <param name="toBotFromChannelTokenIssuer">The toBotFromChannelTokenIssuer.</param>
+        /// <param name="oAuthUrl">The oAuthUrl.</param>
+        /// <param name="toBotFromChannelOpenIdMetadataUrl">The toBotFromChannelOpenIdMetadataUrl.</param>
+        /// <param name="toBotFromEmulatorOpenIdMetadataUrl">The toBotFromEmulatorOpenIdMetadataUrl.</param>
+        /// <param name="callerId">The callerId.</param>
+        public CloudEnvironment(
             string channelService,
             bool isGovernment,
             string toChannelFromBotLoginUrl,
@@ -169,35 +151,22 @@ namespace Microsoft.Bot.Connector.Authentication
 
             var channelService = await channelProvider.GetChannelServiceAsync().ConfigureAwait(false);
 
-            return GetCloudEnvironment(channelService);
-        }
-
-        /// <summary>
-        /// Gets a CloudEnvironment for a particular channel service constant.
-        /// </summary>
-        /// <param name="channelService">The channel service.</param>
-        /// <returns>The CloudEnvironment.</returns>
-        public static CloudEnvironment GetCloudEnvironment(string channelService)
-        {
-            if (string.IsNullOrEmpty(channelService))
+            if (channelService == GovernmentAuthenticationConstants.ChannelService)
             {
-                return CloudEnvironment.PublicCloud;
+                return CloudEnvironment.UsGovernment;
             }
-            else if (channelService == UsGovernment.ChannelService)
+            else
             {
-                return UsGovernment;
+                var cloudEnvironmentProvider = channelProvider as ICloudEnvironmentProvider;
+                if (cloudEnvironmentProvider != null)
+                {
+                    return await cloudEnvironmentProvider.GetCloudEnvironmentAsync().ConfigureAwait(false);
+                }
+                else
+                {
+                    throw new Exception("Unable to create CloudEnvironment");
+                }
             }
-            else if (channelService == UsNatGovernment.ChannelService)
-            {
-                return UsNatGovernment;
-            }
-            else if (channelService == UsSecGovernment.ChannelService)
-            {
-                return UsSecGovernment;
-            }
-
-            // Default is to use PublicCloud
-            return CloudEnvironment.PublicCloud;
         }
 
         /// <summary>
@@ -208,7 +177,14 @@ namespace Microsoft.Bot.Connector.Authentication
         public static async Task<MicrosoftAppCredentials> GetEmptyCredentialAsync(IChannelProvider channelProvider)
         {
             var cloudEnvironment = await GetCloudEnvironmentAsync(channelProvider).ConfigureAwait(false);
-            return GetEmptyCredential(cloudEnvironment.ChannelService);
+            if (cloudEnvironment == CloudEnvironment.PublicCloud)
+            {
+                return MicrosoftAppCredentials.Empty;
+            }
+            else
+            {
+                return new MicrosoftGovernmentAppCredentials(null, null, null, null, cloudEnvironment.ToChannelFromBotOAuthScope, cloudEnvironment.ToChannelFromBotLoginUrl);
+            }
         }
 
         /// <summary>
@@ -229,24 +205,6 @@ namespace Microsoft.Bot.Connector.Authentication
                 RequireSignedTokens = true,
                 ValidateIssuerSigningKey = true,
             };
-        }
-
-        /// <summary>
-        /// Gets an empty MicrosoftAppCredential for a particular channel service constant.
-        /// </summary>
-        /// <param name="channelService">The channel service.</param>
-        /// <returns>The empty credential.</returns>
-        private static MicrosoftAppCredentials GetEmptyCredential(string channelService)
-        {
-            var cloudEnvironment = GetCloudEnvironment(channelService);
-            if (cloudEnvironment == CloudEnvironment.PublicCloud)
-            {
-                return MicrosoftAppCredentials.Empty;
-            }
-            else
-            {
-                return new MicrosoftGovernmentAppCredentials(null, null, null, null, cloudEnvironment.ToChannelFromBotOAuthScope, cloudEnvironment.ToChannelFromBotLoginUrl);
-            }
         }
     }
 }

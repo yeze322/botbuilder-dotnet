@@ -9,7 +9,7 @@ namespace Microsoft.Bot.Connector.Authentication
     /// <summary>
     /// A simple channel provider with basic configuration parameters to connect to a Bot Framework channel service.
     /// </summary>
-    public class SimpleChannelProvider : IChannelProvider, ICloudEnvironmentProvider
+    public class SimpleChannelProvider : IChannelProvider
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="SimpleChannelProvider"/> class.
@@ -46,23 +46,24 @@ namespace Microsoft.Bot.Connector.Authentication
         }
 
         /// <summary>
-        /// Gets the cloud environment to be used.
-        /// </summary>
-        /// <returns>The cloud environment property.</returns>
-        public Task<CloudEnvironment> GetCloudEnvironmentAsync()
-        {
-            // TODO: load the actual CloudEnvironment properties from config
-            return Task.FromResult(CloudEnvironment.GetCloudEnvironment(this.ChannelService));
-        }
-
-        /// <summary>
         /// Gets a value of whether this provider represents a channel on US Government Azure.
         /// </summary>
         /// <returns>True if this channel provider represents a channel on US Government Azure.</returns>
         [Obsolete("Use CloudEnvironment instead to determine constants for a channel provider")]
         public bool IsGovernment()
         {
-            return CloudEnvironment.GetCloudEnvironment(ChannelService).IsGovernment;
+            if (ChannelService == null)
+            {
+                return false;
+            }
+            else if (ChannelService == CloudEnvironment.UsGovernment.ChannelService)
+            {
+                return true;
+            }
+            else
+            {
+                throw new NotImplementedException();
+            }
         }
 
         /// <summary>
