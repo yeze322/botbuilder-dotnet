@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -18,12 +19,21 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
     /// <summary>
     /// LG template Evaluator.
     /// </summary>
-    internal class Evaluator : LGTemplateParserBaseVisitor<object>
+    public class Evaluator : LGTemplateParserBaseVisitor<object>
     {
+        /// <summary>
+        /// Card_applyStyle cost.
+        /// </summary>
+#pragma warning disable CA2211 // Non-constant fields should not be visible
+#pragma warning disable SA1401 // Fields should be private
+        public static long CardApplyStyleCost = 0;
+#pragma warning restore SA1401 // Fields should be private
+#pragma warning restore CA2211 // Non-constant fields should not be visible
         internal const string LGType = "lgType";
 
         private const string ReExecuteSuffix = "!";
         private readonly Stack<EvaluationTarget> _evaluationTargetStack = new Stack<EvaluationTarget>();
+        private readonly Dictionary<string, object> _history = new Dictionary<string, object>();
         private readonly EvaluationOptions _lgOptions;
 
         /// <summary>
@@ -34,6 +44,7 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
         /// <param name="opt">Options for LG. </param>
         public Evaluator(List<Template> templates, ExpressionParser expressionParser, EvaluationOptions opt = null)
         {
+            CardApplyStyleCost = 0;
             Templates = templates;
             TemplateMap = templates.ToDictionary(x => x.Name);
             _lgOptions = opt;
@@ -75,6 +86,8 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
         /// <returns>Evaluate result.</returns>
         public object EvaluateTemplate(string inputTemplateName, object scope)
         {
+            var sw = new Stopwatch();
+            sw.Start();
             var memory = scope is CustomizedMemory scopeMemory ? scopeMemory : new CustomizedMemory(scope);
 
             (var reExecute, var templateName) = ParseTemplateName(inputTemplateName);
@@ -98,21 +111,23 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
             {
                 previousEvaluateTarget = _evaluationTargetStack.Peek();
 
-                if (!reExecute && previousEvaluateTarget.EvaluatedChildren.ContainsKey(currentEvaluateId))
+                if (!reExecute && _history.ContainsKey(currentEvaluateId))
                 {
-                    return previousEvaluateTarget.EvaluatedChildren[currentEvaluateId];
+                    return _history[currentEvaluateId];
                 }
             }
 
             // Using a stack to track the evaluation trace
             _evaluationTargetStack.Push(templateTarget);
             var result = Visit(TemplateMap[templateName].TemplateBodyParseTree);
-            if (previousEvaluateTarget != null)
-            {
-                previousEvaluateTarget.EvaluatedChildren[currentEvaluateId] = result;
-            }
+            _history[currentEvaluateId] = result;
 
             _evaluationTargetStack.Pop();
+            sw.Stop();
+            if (inputTemplateName == "card_applyStyle")
+            {
+                CardApplyStyleCost += sw.ElapsedMilliseconds;
+            }
 
             return result;
         }

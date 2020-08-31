@@ -22,7 +22,7 @@ namespace Microsoft.Bot.Builder.AI.LanguageGeneration.Tests
         {
             var templates = Templates.ParseFile(GetExampleFilePath("2.lg"));
 
-            var evaled = templates.Evaluate("wPhrase");
+            var evaled = templates.Evaluate("t2");
             var options = new List<string> { "Hi", "Hello", "Hiya" };
 
             Assert.True(options.Contains(evaled), $"The result `{evaled}` is not in those options [{string.Join(",", options)}]");
