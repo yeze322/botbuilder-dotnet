@@ -14,8 +14,8 @@ namespace Microsoft.Bot.Builder.Azure.Queues
         /// <summary>
         /// Queues an Activity. The visibility timeout specifies how long the message should be invisible.
         /// </summary>
-        /// <param name="activity">This is expected to be an <see cref="Activity"/> retrieved from a call to 
-        /// activity.GetConversationReference().GetContinuationActivity().  This enables restarting the conversation
+        /// <param name="activity"><see cref="Activity"/> retrieved from a call to 
+        /// activity.GetConversationReference().GetContinuationActivity(). Used to restart the conversation
         /// using BotAdapter.ContinueConversationAsync.</param>
         /// <param name="visibilityTimeout">Default value of 0. Cannot be larger than 7 days.</param>
         /// <param name="timeToLive">Specifies the time-to-live interval for the message.</param>
