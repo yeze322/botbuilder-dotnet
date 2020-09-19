@@ -15,7 +15,7 @@ namespace Microsoft.Bot.Builder.Azure.Queues
     /// <summary>
     /// Service used to add messages to an Azure.Storage.Queues.
     /// </summary>
-    public class QueuesStorage
+    public class QueuesStorage : IQueuesStorage
     {
         private JsonSerializerSettings _jsonSettings;
         private bool _createQueueIfNotExists = true;

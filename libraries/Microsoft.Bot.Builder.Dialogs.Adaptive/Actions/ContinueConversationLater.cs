@@ -6,10 +6,10 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using AdaptiveExpressions.Properties;
-using Microsoft.Bot.Builder.Dialogs;
+using Microsoft.Bot.Builder.Azure.Queues;
 using Newtonsoft.Json;
 
-namespace Microsoft.Bot.Builder.Azure.Queues
+namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Actions
 {
     /// <summary>
     /// Action which schedules a conversation to be continued later by writing a EventActivity(Name=ContinueConversation) to a Azure Storage queue.
@@ -32,7 +32,7 @@ namespace Microsoft.Bot.Builder.Azure.Queues
         /// The Kind name for this dialog.
         /// </summary>
         [JsonProperty("$kind")]
-        public const string Kind = "AzureQueues.ContinueConversationLater";
+        public const string Kind = "Microsoft.ContinueConversationLater";
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ContinueConversationLater"/> class.
