@@ -101,7 +101,7 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Testing.TestActions
 
                 if (replyActivity != null)
                 {
-                    ValidateReply((Activity)replyActivity);
+                    ValidateReply((Schema.Activity)replyActivity);
                     return;
                 }
             }
