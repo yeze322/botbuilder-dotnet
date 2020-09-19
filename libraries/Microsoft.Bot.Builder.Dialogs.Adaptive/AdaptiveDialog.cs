@@ -20,6 +20,7 @@ using Microsoft.Bot.Builder.Dialogs.Debugging;
 using Microsoft.Bot.Schema;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Activity = Microsoft.Bot.Schema.Activity;
 
 namespace Microsoft.Bot.Builder.Dialogs.Adaptive
 {

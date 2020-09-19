@@ -4,7 +4,6 @@ using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using Microsoft.Bot.Schema;
 using Newtonsoft.Json;
 
 namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Testing.TestActions
@@ -48,7 +47,7 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Testing.TestActions
         public bool Exact { get; set; } = true;
 
         /// <inheritdoc/>
-        public override void ValidateReply(Activity activity)
+        public override void ValidateReply(Schema.Activity activity)
         {
             // if we have a reply
             if (!string.IsNullOrEmpty(Text))

@@ -10,6 +10,7 @@ using AdaptiveExpressions;
 using Microsoft.Bot.Builder.Adapters;
 using Microsoft.Bot.Schema;
 using Newtonsoft.Json;
+using Activity = Microsoft.Bot.Schema.Activity;
 
 namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Testing.TestActions
 {

@@ -58,7 +58,7 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Testing.TestActions
             Stopwatch sw = new Stopwatch();
             sw.Start();
 
-            await adapter.ProcessActivityAsync((Activity)typing, callback, default).ConfigureAwait(false);
+            await adapter.ProcessActivityAsync((Schema.Activity)typing, callback, default).ConfigureAwait(false);
 
             sw.Stop();
 

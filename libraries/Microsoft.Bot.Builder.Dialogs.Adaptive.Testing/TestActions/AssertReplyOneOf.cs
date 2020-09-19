@@ -6,8 +6,8 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using Microsoft.Bot.Schema;
 using Newtonsoft.Json;
+using Activity = Microsoft.Bot.Schema.Activity;
 
 namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Testing.TestActions
 {
