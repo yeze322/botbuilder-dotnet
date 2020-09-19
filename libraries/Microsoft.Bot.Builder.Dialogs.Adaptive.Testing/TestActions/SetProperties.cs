@@ -9,7 +9,6 @@ using Microsoft.Bot.Builder.Adapters;
 using Microsoft.Bot.Builder.Dialogs.Adaptive.Actions;
 using Microsoft.Bot.Schema;
 using Newtonsoft.Json;
-using Activity = Microsoft.Bot.Schema.Activity;
 
 namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Testing
 {
@@ -48,7 +47,7 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Testing
         /// <inheritdoc/>
         public async override Task ExecuteAsync(TestAdapter adapter, BotCallbackHandler callback, DialogInspector inspector)
         {
-            var activity = new Activity();
+            var activity = new Schema.Activity();
             activity.ApplyConversationReference(adapter.Conversation, isIncoming: true);
             activity.Type = "event";
             activity.Name = "SetProperties";

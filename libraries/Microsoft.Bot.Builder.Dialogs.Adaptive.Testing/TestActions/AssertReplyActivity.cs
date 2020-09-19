@@ -9,8 +9,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using AdaptiveExpressions;
 using Microsoft.Bot.Builder.Adapters;
+using Microsoft.Bot.Schema;
 using Newtonsoft.Json;
-using Activity = Microsoft.Bot.Schema.Activity;
 
 namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Testing.TestActions
 {
@@ -72,7 +72,7 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Testing.TestActions
         /// Validates the reply of an activity.
         /// </summary>
         /// <param name="activity">The activity to verify.</param>
-        public virtual void ValidateReply(Activity activity)
+        public virtual void ValidateReply(Schema.Activity activity)
         {
             foreach (var assertion in Assertions)
             {

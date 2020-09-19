@@ -10,7 +10,6 @@ using AdaptiveExpressions;
 using Microsoft.Bot.Builder.Adapters;
 using Microsoft.Bot.Schema;
 using Newtonsoft.Json;
-using Activity = Microsoft.Bot.Schema.Activity;
 
 namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Testing.TestActions
 {
@@ -47,7 +46,7 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Testing.TestActions
         /// <inheritdoc/>
         public async override Task ExecuteAsync(TestAdapter adapter, BotCallbackHandler callback, DialogInspector inspector)
         {
-            var activity = new Activity();
+            var activity = new Schema.Activity();
             activity.ApplyConversationReference(adapter.Conversation, isIncoming: true);
             activity.Type = "event";
             activity.Name = "MemoryAssertions";

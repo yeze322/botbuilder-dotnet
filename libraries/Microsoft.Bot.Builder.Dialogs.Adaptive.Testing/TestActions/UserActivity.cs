@@ -6,8 +6,8 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.Bot.Builder.Adapters;
+using Microsoft.Bot.Schema;
 using Newtonsoft.Json;
-using Activity = Microsoft.Bot.Schema.Activity;
 
 namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Testing.TestActions
 {
@@ -41,7 +41,7 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Testing.TestActions
         /// The activity to compare.
         /// </value>
         [JsonProperty("activity")]
-        public Activity Activity { get; set; }
+        public Schema.Activity Activity { get; set; }
 
         /// <summary>
         /// Gets or sets the User name.
