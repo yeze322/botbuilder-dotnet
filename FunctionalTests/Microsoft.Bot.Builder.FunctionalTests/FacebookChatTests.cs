@@ -46,6 +46,8 @@ namespace Microsoft.Bot.Builder.FunctionalTests
                 request.Headers.Add("x-hub-signature", hubSignature);
                 request.Content = new StringContent(bodyMessage, Encoding.UTF8, "application/json");
                 request.Method = HttpMethod.Post;
+                request.Properties.Add("messaging_type", "MESSAGE_TAG");
+                request.Properties.Add("tag", "ACCOUNT_UPDATE");
                 request.RequestUri = new Uri(_botEndpoint);
 
                 await client.SendAsync(request);
