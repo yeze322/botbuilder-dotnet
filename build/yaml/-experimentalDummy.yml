@@ -1,5 +1,5 @@
 pool:
-  vmImage: $[ coalesce( variables['VMImage'], 'windows-2019' ) ] # or 'vs2017-win2016'
+  vmImage: $[ coalesce( variables['VMImage'], 'windows-latest' ) ] # or 'windows-2019' or 'vs2017-win2016'
 
 variables:
   TriggeredReason: $[ coalesce( variables['TriggeringBuildReason'], variables['Build.Reason'] ) ]
@@ -26,6 +26,7 @@ stages:
       - script: 'echo "did this run?"'
         displayName: 'Pretend Deploy'
         condition: and(succeeded(), in(variables['TriggeredReason'], 'Schedule', 'Manual'))
+        enabled: false
 
       - task: benjhuser.tfs-extensions-build-tasks.trigger-build-task.TriggerBuild@3
         displayName: 'Trigger build $(NextBuild)'
@@ -38,3 +39,4 @@ stages:
           blockingBuildsList: '$(NextBuild)'
         continueOnError: true
         condition: and(succeededOrFailed(), ne(variables['TriggeredReason'], 'Manual'), ne(variables['NextBuild'], ''), ne(variables['ExecutePipelinesPersonalAccessToken'], ''))
+        enabled: false
