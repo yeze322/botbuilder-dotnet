@@ -364,17 +364,6 @@
       "subtitle": "Trace Activity"
     }
   },
-  "Microsoft.Ask": {
-    "form": {
-      "helpLink": "https://aka.ms/bfc-send-activity",
-      "label": "Send a response to ask a question",
-      "order": [
-        "activity",
-        "*"
-      ],
-      "subtitle": "Ask Activity"
-    }
-  },
   "Microsoft.AttachmentInput": {
     "form": {
       "helpLink": "https://aka.ms/bfc-ask-for-user-input",
