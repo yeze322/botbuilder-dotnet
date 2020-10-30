@@ -41,7 +41,7 @@ steps:
          }
      ]
      
-    SessionTimeout: 20
+    SessionTimeout: 40
 
 - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
   displayName: 'ESRP Signing - authenticode (CP-230012)'
@@ -87,7 +87,7 @@ steps:
             "toolVersion": "1.0"
         }
      ]
-    SessionTimeout: 20
+    SessionTimeout: 40
 
 - script: |
    cd ..
@@ -125,7 +125,7 @@ steps:
              "toolVersion": "1.0"
          }
      ]
-    SessionTimeout: 20
+    SessionTimeout: 40
 
 - task: CopyFiles@2
   displayName: 'Copy *.nupkg,*.snupkg files to publish'
