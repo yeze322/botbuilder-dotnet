@@ -376,7 +376,8 @@ namespace Microsoft.Bot.Builder
                     await RunPipelineAsync(context, callback, cancellationToken).ConfigureAwait(false);
 
                     // Cleanup disposable resources in case other code kept a reference to it.
-                    context.TurnState.Set<IConnectorClient>(null);
+                    // TODO: cleanup IConnectorClient
+                    //context.TurnState.Set<IConnectorClient>(null);
                 }
             }
         }
@@ -460,7 +461,8 @@ namespace Microsoft.Bot.Builder
                     await RunPipelineAsync(context, callback, cancellationToken).ConfigureAwait(false);
 
                     // Cleanup disposable resources in case other code kept a reference to it.
-                    context.TurnState.Set<IConnectorClient>(null);
+                    // TODO: cleanup IConnectorClient
+                    //context.TurnState.Set<IConnectorClient>(null);
                 }
 
                 // Handle ExpectedReplies scenarios where the all the activities have been buffered and sent back at once 
@@ -1309,7 +1311,8 @@ namespace Microsoft.Bot.Builder
                     await RunPipelineAsync(context, callback, cancellationToken).ConfigureAwait(false);
 
                     // Cleanup disposable resources in case other code kept a reference to it.
-                    context.TurnState.Set<IConnectorClient>(null);
+                    // TODO: cleanup IConnectorClient
+                    //context.TurnState.Set<IConnectorClient>(null);
                 }
             }
         }

@@ -152,7 +152,8 @@ namespace Microsoft.Bot.Builder.Streaming
                     await RunPipelineAsync(context, callbackHandler, cancellationToken).ConfigureAwait(false);
 
                     // Cleanup connector client 
-                    context.TurnState.Set<IConnectorClient>(null);
+                    // TODO: cleanup IConnectorClient
+                    //context.TurnState.Set<IConnectorClient>(null);
                 }
 
                 if (activity.Type == ActivityTypes.Invoke)
