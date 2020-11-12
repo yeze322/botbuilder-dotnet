@@ -192,6 +192,12 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Tests
         }
 
         [Fact]
+        public async Task Action_EmitEventList()
+        {
+            await TestUtils.RunTestScript(_resourceExplorerFixture.ResourceExplorer);
+        }
+
+        [Fact]
         public async Task Action_Foreach_Nested()
         {
             await TestUtils.RunTestScript(_resourceExplorerFixture.ResourceExplorer);

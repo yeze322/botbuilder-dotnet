@@ -1,0 +1,77 @@
+﻿{
+    "$schema": "../../../tests.schema",
+    "$kind": "Microsoft.Test.Script",
+    "dialog": {
+        "$kind": "Microsoft.AdaptiveDialog",
+        "triggers": [
+          {
+              "$kind": "Microsoft.OnBeginDialog",
+              "actions": [
+                  {
+                      "$kind": "Microsoft.SetProperty",
+                      "property": "dialog.events",
+                      "value": "=['event1', 'event2']"
+                  },
+                  {
+                      "$kind": "Microsoft.Foreach",
+                      "itemsProperty": "dialog.events",
+                      "actions": [
+                        {
+                            "$kind": "Microsoft.EmitEvent",
+                            "eventName": "=dialog.foreach.value"
+                        },
+                        {
+                            "$kind": "Microsoft.SendActivity",
+                            "activity": "event: ${dialog.foreach.value} sent."
+                        }
+                      ]
+                  }
+              ]
+          },
+          {
+            "$kind": "Microsoft.OnDialogEvent",
+            "event": "event1",
+            "actions": [
+              {
+                  "$kind": "Microsoft.SendActivity",
+                  "activity": "CustomEvent event1 fired"
+              }
+            ]
+          },
+          {
+            "$kind": "Microsoft.OnDialogEvent",
+            "event": "event2",
+            "actions": [
+              {
+                  "$kind": "Microsoft.SendActivity",
+                  "activity": "CustomEvent event2 fired"
+              }
+            ]
+          }
+        ],
+        "autoEndDialog": true,
+        "defaultResultProperty": "dialog.result"
+    },
+    "script": [
+        {
+            "$kind": "Microsoft.Test.UserSays",
+            "text": "hi"
+        },
+        {
+            "$kind": "Microsoft.Test.AssertReply",
+            "text": "CustomEvent event1 fired"
+        },
+        {
+            "$kind": "Microsoft.Test.AssertReply",
+            "text": "event: event1 sent."
+        },
+        {
+            "$kind": "Microsoft.Test.AssertReply",
+            "text": "CustomEvent event2 fired"
+        },
+        {
+            "$kind": "Microsoft.Test.AssertReply",
+            "text": "event: event2 sent."
+        }
+    ]
+}
