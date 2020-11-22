@@ -1,0 +1,38 @@
+{
+    "$schema": "https://schemas.botframework.com/schemas/component/v1.0/component.schema",
+    "$role": "implements(Microsoft.IDialog)",
+    "title": "Do While Loop",
+    "description": "Execute actions while a condition is true.",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "Optional id for the dialog"
+        },
+        "disabled": {
+            "$ref": "schema:#/definitions/booleanExpression",
+            "title": "Disabled",
+            "description": "Optional condition which if true will disable this action.",
+            "examples": [
+                "user.age > 18"
+            ]
+        },
+        "condition": {
+            "$ref": "schema:#/definitions/booleanExpression",
+            "title": "Disabled",
+            "description": "Optional condition which must evaluate to true for actions to continue processing.",
+            "examples": [
+                "user.age > 18"
+            ]
+        },
+        "actions": {
+            "type": "array",
+            "items": {
+                "$kind": "Microsoft.IDialog"
+            },
+            "title": "Actions",
+            "description": "Actions to execute while the condition is true."
+        }
+    }
+}
