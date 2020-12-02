@@ -4,8 +4,12 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using AdaptiveExpressions;
+using AdaptiveExpressions.Memory;
 using Microsoft.Bot.Builder.Dialogs.Debugging;
 using Microsoft.Bot.Builder.Dialogs.Declarative.Resources;
 using Microsoft.Bot.Builder.LanguageGeneration;
@@ -40,6 +44,7 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Generators
         public TemplateEngineLanguageGenerator()
         {
             this.lg = new LanguageGeneration.Templates();
+            TemplateFunctionRegister();
         }
 
         /// <summary>
@@ -49,6 +54,7 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Generators
         public TemplateEngineLanguageGenerator(LanguageGeneration.Templates engine = null)
         {
             this.lg = engine ?? new LanguageGeneration.Templates();
+            TemplateFunctionRegister();
         }
 
         /// <summary>
@@ -65,6 +71,7 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Generators
             var importResolver = LanguageGeneratorManager.ResourceExplorerResolver(locale, resourceMapping);
             var lgResource = new LGResource(Id, Id, lgText ?? string.Empty);
             this.lg = LanguageGeneration.Templates.ParseResource(lgResource, importResolver);
+            TemplateFunctionRegister();
         }
 
         /// <summary>
@@ -82,6 +89,7 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Generators
             var importResolver = LanguageGeneratorManager.ResourceExplorerResolver(locale, resourceMapping);
             var resource = new LGResource(Id, filePath, File.ReadAllText(filePath));
             this.lg = LanguageGeneration.Templates.ParseResource(resource, importResolver);
+            TemplateFunctionRegister();
         }
 
         /// <summary>
@@ -99,6 +107,7 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Generators
             var lgResource = new LGResource(Id, resource.FullName, content);
             this.lg = LanguageGeneration.Templates.ParseResource(lgResource, importResolver);
             RegisterSourcemap(lg, resource);
+            TemplateFunctionRegister();
         }
 
         /// <summary>
@@ -177,6 +186,68 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Generators
                     DebugSupport.SourceMap.Add(item, debugSM);
                 }
             }
+        }
+
+        private void TemplateFunctionRegister()
+        {
+            if (!Expression.Functions.ContainsKey("template"))
+            {
+                Expression.Functions.Add("template", new ExpressionEvaluator(
+                "template",
+                TemplateEvaluator,
+                ReturnType.Object));
+            }
+            else
+            {
+                var currentEvaluator = Expression.Functions["template"];
+                Expression.Functions["template"] = new ExpressionEvaluator(
+                "template",
+                (expression, state, options) =>
+                {
+                    object value = null;
+                    string error = null;
+                    (value, error) = currentEvaluator.TryEvaluate(expression, state, options);
+
+                    var errorRegex = new Regex(@"template name .* is invalid\.");
+                    if (value == null && error != null && errorRegex.IsMatch(error))
+                    {
+                        (value, error) = TemplateEvaluator(expression, state, options);
+                    }
+
+                    return (value, error);
+                },
+                ReturnType.Object);
+            }
+        }
+
+        private (object value, string error) TemplateEvaluator(Expression expression, IMemory state, Options options)
+        {
+            object value = null;
+            string error = null;
+
+            IReadOnlyList<object> args;
+            (args, error) = FunctionUtils.EvaluateChildren(expression, state, options);
+            if (error == null)
+            {
+                var templateName = args[0] as string;
+
+                if (templateName == null || lg.AllTemplates.All(u => u.Name != templateName))
+                {
+                    error = $"template name {templateName} is invalid.";
+                }
+                else
+                {
+                    var template = lg.AllTemplates.First(u => u.Name == templateName);
+                    var newScope = template.Parameters.Zip(args, (k, v) => new { k, v })
+                    .ToDictionary(x => x.k, x => x.v);
+                    var memory = new StackedMemory();
+                    memory.Push(state);
+                    memory.Push(new SimpleObjectMemory(newScope));
+                    value = lg.Evaluate(templateName, memory);
+                }
+            }
+
+            return (value, error);
         }
 
         private async Task HandlerLGEventAsync(DialogContext dialogContext, object sender, EventArgs eventArgs, CancellationToken cancellationToken = default)
