@@ -238,7 +238,7 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Generators
                 else
                 {
                     var template = lg.AllTemplates.First(u => u.Name == templateName);
-                    var newScope = template.Parameters.Zip(args, (k, v) => new { k, v })
+                    var newScope = template.Parameters.Zip(args.Skip(1), (k, v) => new { k, v })
                     .ToDictionary(x => x.k, x => x.v);
                     var memory = new StackedMemory();
                     memory.Push(state);
