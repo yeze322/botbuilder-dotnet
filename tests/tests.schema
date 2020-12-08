@@ -305,7 +305,7 @@
       "$ref": "#/definitions/Microsoft.SwitchCondition"
     },
     {
-      "$ref": "#/definitions/Microsoft.TelemetryTrackEvent"
+      "$ref": "#/definitions/Microsoft.TelemetryTrackEventAction"
     },
     {
       "$ref": "#/definitions/Microsoft.TemperatureEntityRecognizer"
@@ -3784,7 +3784,7 @@
           "$ref": "#/definitions/Microsoft.SwitchCondition"
         },
         {
-          "$ref": "#/definitions/Microsoft.TelemetryTrackEvent"
+          "$ref": "#/definitions/Microsoft.TelemetryTrackEventAction"
         },
         {
           "$ref": "#/definitions/Microsoft.Test.AssertCondition"
@@ -7002,14 +7002,11 @@
           "description": "SnapShot file path.",
           "default": "=settings.orchestrator.shapshotpath"
         },
-        "entityRecognizers": {
-          "type": "array",
-          "title": "Entity recognizers",
-          "description": "Collection of entity recognizers to use.",
-          "items": {
-            "$kind": "Microsoft.IEntityRecognizer",
-            "$ref": "#/definitions/Microsoft.IEntityRecognizer"
-          }
+        "externalEntityRecognizer": {
+          "$kind": "Microsoft.IRecognizer",
+          "title": "External entity recognizer",
+          "description": "Entities recognized by this recognizer will be merged with Orchestrator results.",
+          "$ref": "#/definitions/Microsoft.IRecognizer"
         },
         "disambiguationScoreThreshold": {
           "$ref": "#/definitions/numberExpression",
@@ -8253,7 +8250,7 @@
         }
       }
     },
-    "Microsoft.TelemetryTrackEvent": {
+    "Microsoft.TelemetryTrackEventAction": {
       "$role": "implements(Microsoft.IDialog)",
       "type": "object",
       "title": "Telemetry - track event",
@@ -8306,7 +8303,7 @@
           "description": "Defines the valid properties for the component you are configuring (from a dialog .schema file)",
           "type": "string",
           "pattern": "^[a-zA-Z][a-zA-Z0-9.]*$",
-          "const": "Microsoft.TelemetryTrackEvent"
+          "const": "Microsoft.TelemetryTrackEventAction"
         },
         "$designer": {
           "title": "Designer information",
