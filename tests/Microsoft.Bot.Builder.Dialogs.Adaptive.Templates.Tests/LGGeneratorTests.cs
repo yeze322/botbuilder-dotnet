@@ -440,11 +440,8 @@ namespace Microsoft.Bot.Builder.AI.LanguageGeneration.Tests
                 (turnContext as TurnContext).Locale = "de-DE";
                 await dm.OnTurnAsync(turnContext, cancellationToken: cancellationToken).ConfigureAwait(false);
             })
-            .Send("hola")
-            .AssertReply("1,122")
-            .AssertReply("1,1235")
-            .AssertReply("Samstag, 6. Januar 2018")
-            .AssertReply("3,14159")
+            .Send("hi")
+            .AssertReply("german")
             .StartTestAsync();
         }
 

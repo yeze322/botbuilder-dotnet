@@ -190,11 +190,12 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Generators
 
         private void TemplateFunctionRegister()
         {
+            var dict = new Dictionary<(string, string), EvaluateExpressionDelegate>();
             if (!Expression.Functions.ContainsKey("template"))
             {
                 Expression.Functions.Add("template", new ExpressionEvaluator(
                 "template",
-                TemplateEvaluator,
+                GenerateEvaluator(dict),
                 ReturnType.Object));
             }
             else
@@ -211,7 +212,7 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Generators
                     var errorRegex = new Regex(@"template name .* is invalid\.");
                     if (value == null && error != null && errorRegex.IsMatch(error))
                     {
-                        (value, error) = TemplateEvaluator(expression, state, options);
+                        (value, error) = GenerateEvaluator(dict)(expression, state, options);
                     }
 
                     return (value, error);
@@ -220,34 +221,71 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Generators
             }
         }
 
-        private (object value, string error) TemplateEvaluator(Expression expression, IMemory state, Options options)
+        private EvaluateExpressionDelegate GenerateEvaluator(Dictionary<(string, string), EvaluateExpressionDelegate> dict)
         {
-            object value = null;
-            string error = null;
-
-            IReadOnlyList<object> args;
-            (args, error) = FunctionUtils.EvaluateChildren(expression, state, options);
-            if (error == null)
+            return (expression, state, options) =>
             {
-                var templateName = args[0] as string;
+                object value = null;
+                string error = null;
 
-                if (templateName == null || lg.AllTemplates.All(u => u.Name != templateName))
+                IReadOnlyList<object> args;
+                (args, error) = FunctionUtils.EvaluateChildren(expression, state, options);
+                if (error == null)
                 {
-                    error = $"template name {templateName} is invalid.";
-                }
-                else
-                {
-                    var template = lg.AllTemplates.First(u => u.Name == templateName);
-                    var newScope = template.Parameters.Zip(args.Skip(1), (k, v) => new { k, v })
-                    .ToDictionary(x => x.k, x => x.v);
-                    var memory = new StackedMemory();
-                    memory.Push(state);
-                    memory.Push(new SimpleObjectMemory(newScope));
-                    value = lg.Evaluate(templateName, memory);
-                }
-            }
+                    var templateName = args[0] as string;
 
-            return (value, error);
+                    if (templateName == null || lg.AllTemplates.All(u => u.Name != templateName))
+                    {
+                        error = $"template name {templateName} is invalid.";
+                    }
+                    else
+                    {
+                        // Get runtime locale from memory "turn.locale"
+                        if (!state.TryGetValue("turn.locale", out var runtimeLocale))
+                        {
+                            runtimeLocale = string.Empty;
+                        }
+
+                        // Get all fallback of the locale
+                        if (!new LanguagePolicy().TryGetValue(runtimeLocale as string, out string[] fallbacks))
+                        {
+                            fallbacks = new string[] { string.Empty };
+                        }
+
+                        // if there exist the (locale, templatename) pairs, return its evaluator
+                        foreach (var fallback in fallbacks)
+                        {
+                            var key = (fallback, templateName);
+                            if (dict.ContainsKey(key))
+                            {
+                                return dict[key](expression, state, options);
+                            }
+                        }
+
+                        // build new evaluator
+                        EvaluateExpressionDelegate evaluatorDelegate = (expression, state, options) =>
+                        {
+                            object delegateValue = null;
+                            string error = null;
+                            var template = lg.AllTemplates.First(u => u.Name == templateName);
+                            var newScope = template.Parameters.Zip(args.Skip(1), (k, v) => new { k, v })
+                            .ToDictionary(x => x.k, x => x.v);
+                            var memory = new StackedMemory();
+                            memory.Push(state);
+                            memory.Push(new SimpleObjectMemory(newScope));
+                            delegateValue = lg.Evaluate(templateName, memory);
+                            return (delegateValue, error);
+                        };
+
+                        // Get locale registed from file
+                        var fileLocale = LGResourceLoader.ParseLGFileName(Path.GetFileName(lg.Source)).language;
+                        dict.Add((fileLocale, templateName), evaluatorDelegate);
+                        return evaluatorDelegate(expression, state, options);
+                    }
+                }
+
+                return (value, error);
+            };
         }
 
         private async Task HandlerLGEventAsync(DialogContext dialogContext, object sender, EventArgs eventArgs, CancellationToken cancellationToken = default)

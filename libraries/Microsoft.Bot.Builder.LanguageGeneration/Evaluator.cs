@@ -567,13 +567,6 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
                 return new ExpressionEvaluator(templateName, FunctionUtils.Apply(this.TemplateEvaluator(name)), ReturnType.Object, this.ValidTemplateReference);
             }
 
-            const string template = "template";
-
-            if (name.Equals(template, StringComparison.Ordinal))
-            {
-                return new ExpressionEvaluator(template, FunctionUtils.Apply(this.TemplateFunction()), ReturnType.Object, this.ValidateTemplateFunction);
-            }
-
             const string fromFile = "fromFile";
 
             if (name.Equals(fromFile, StringComparison.Ordinal))
