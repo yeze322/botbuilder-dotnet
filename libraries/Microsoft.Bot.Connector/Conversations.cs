@@ -2431,5 +2431,191 @@ namespace Microsoft.Bot.Connector
             }
             return _result;
         }
+
+
+        private async Task<HttpOperationResponse<T>> GetResponseAsync<T>(string url, bool shouldTrace, string invocationId, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            // Create HTTP transport objects
+            var _httpRequest = new HttpRequestMessage();
+            HttpResponseMessage _httpResponse = null;
+            _httpRequest.Method = new HttpMethod("GET");
+            _httpRequest.RequestUri = new System.Uri(url);
+            // Set Headers
+            if (customHeaders != null)
+            {
+                foreach (var _header in customHeaders)
+                {
+                    if (_httpRequest.Headers.Contains(_header.Key))
+                    {
+                        _httpRequest.Headers.Remove(_header.Key);
+                    }
+                    _httpRequest.Headers.TryAddWithoutValidation(_header.Key, _header.Value);
+                }
+            }
+
+            // Serialize Request
+            string _requestContent = null;
+            // Set Credentials
+            if (Client.Credentials != null)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                await Client.Credentials.ProcessHttpRequestAsync(_httpRequest, cancellationToken).ConfigureAwait(false);
+            }
+            // Send Request
+            if (shouldTrace)
+            {
+                ServiceClientTracing.SendRequest(invocationId, _httpRequest);
+            }
+            cancellationToken.ThrowIfCancellationRequested();
+            _httpResponse = await Client.HttpClient.SendAsync(_httpRequest, cancellationToken).ConfigureAwait(false);
+            if (shouldTrace)
+            {
+                ServiceClientTracing.ReceiveResponse(invocationId, _httpResponse);
+            }
+            HttpStatusCode _statusCode = _httpResponse.StatusCode;
+            cancellationToken.ThrowIfCancellationRequested();
+            string _responseContent = null;
+            if ((int)_statusCode != 200)
+            {
+                var ex = new HttpOperationException(string.Format("Operation returned an invalid status code '{0}'", _statusCode));
+                if (_httpResponse.Content != null)
+                {
+                    _responseContent = await _httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+                }
+                else
+                {
+                    _responseContent = string.Empty;
+                }
+                ex.Request = new HttpRequestMessageWrapper(_httpRequest, _requestContent);
+                ex.Response = new HttpResponseMessageWrapper(_httpResponse, _responseContent);
+                if (shouldTrace)
+                {
+                    ServiceClientTracing.Error(invocationId, ex);
+                }
+                _httpRequest.Dispose();
+                if (_httpResponse != null)
+                {
+                    _httpResponse.Dispose();
+                }
+                throw ex;
+            }
+            // Create Result
+            var _result = new HttpOperationResponse<T>();
+            _result.Request = _httpRequest;
+            _result.Response = _httpResponse;
+            // Deserialize Response
+            if ((int)_statusCode == 200)
+            {
+                _responseContent = await _httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+                try
+                {
+                    _result.Body = Rest.Serialization.SafeJsonConvert.DeserializeObject<T>(_responseContent, Client.DeserializationSettings);
+                }
+                catch (JsonException ex)
+                {
+                    _httpRequest.Dispose();
+                    if (_httpResponse != null)
+                    {
+                        _httpResponse.Dispose();
+                    }
+                    throw new SerializationException("Unable to deserialize the response.", _responseContent, ex);
+                }
+            }
+            if (shouldTrace)
+            {
+                ServiceClientTracing.Exit(invocationId, _result);
+            }
+            return _result;
+        }
+
+        /// <summary>
+        /// ReplyToActivity
+        /// </summary>
+        /// <remarks>
+        /// This method allows you to reply to an activity.
+        ///
+        /// This is slightly different from SendToConversation().
+        /// * SendToConversation(conversationId) - will append the activity to the end
+        /// of the conversation according to the timestamp or semantics of the channel.
+        /// * ReplyToActivity(conversationId,ActivityId) - adds the activity as a reply
+        /// to another activity, if the channel supports it. If the channel does not
+        /// support nested replies, ReplyToActivity falls back to SendToConversation.
+        ///
+        /// Use ReplyToActivity when replying to a specific activity in the
+        /// conversation.
+        ///
+        /// Use SendToConversation in all other cases.
+        /// </remarks>
+        /// <param name='conversationId'>
+        /// Conversation ID
+        /// </param>
+        /// <param name='activityId'>
+        /// activityId the reply is to (OPTIONAL)
+        /// </param>
+        /// <param name='activity'>
+        /// Activity to send
+        /// </param>
+        /// <param name='customHeaders'>
+        /// Headers that will be added to request.
+        /// </param>
+        /// <param name='cancellationToken'>
+        /// The cancellation token.
+        /// </param>
+        /// <exception cref="ErrorResponseException">
+        /// Thrown when the operation returned an invalid status code
+        /// </exception>
+        /// <exception cref="SerializationException">
+        /// Thrown when unable to deserialize the response
+        /// </exception>
+        /// <exception cref="ValidationException">
+        /// Thrown when a required parameter is null
+        /// </exception>
+        /// <exception cref="System.ArgumentNullException">
+        /// Thrown when a required parameter is null
+        /// </exception>
+        /// <return>
+        /// A response object containing the response body and response headers.
+        /// </return>
+        public async Task<HttpOperationResponse<T>> ReplyToActivityAndGetResponseWithHttpMessagesAsync<T>(
+            string conversationId, 
+            string activityId, 
+            Activity activity, 
+            Dictionary<string, List<string>> customHeaders = null, 
+            CancellationToken cancellationToken = default(CancellationToken))
+        {
+            if (conversationId == null)
+            {
+                throw new ValidationException(ValidationRules.CannotBeNull, "conversationId");
+            }
+            if (activityId == null)
+            {
+                throw new ValidationException(ValidationRules.CannotBeNull, "activityId");
+            }
+            if (activity == null)
+            {
+                throw new ValidationException(ValidationRules.CannotBeNull, "activity");
+            }
+            // Tracing
+            bool _shouldTrace = ServiceClientTracing.IsEnabled;
+            string _invocationId = null;
+            if (_shouldTrace)
+            {
+                _invocationId = ServiceClientTracing.NextInvocationId.ToString();
+                Dictionary<string, object> tracingParameters = new Dictionary<string, object>();
+                tracingParameters.Add("conversationId", conversationId);
+                tracingParameters.Add("activityId", activityId);
+                tracingParameters.Add("activity", activity);
+                tracingParameters.Add("cancellationToken", cancellationToken);
+                ServiceClientTracing.Enter(_invocationId, this, "ReplyToActivity", tracingParameters);
+            }
+            // Construct URL
+            var _baseUrl = Client.BaseUri.AbsoluteUri;
+            var _url = new System.Uri(new System.Uri(_baseUrl + (_baseUrl.EndsWith("/") ? "" : "/")), "v3/conversations/{conversationId}/activities/{activityId}").ToString();
+            _url = _url.Replace("{conversationId}", System.Uri.EscapeDataString(conversationId));
+            _url = _url.Replace("{activityId}", System.Uri.EscapeDataString(activityId));
+
+
+            return await GetResponseAsync<T>(_url, _shouldTrace, _invocationId, customHeaders, cancellationToken).ConfigureAwait(false);
+        }
     }
 }

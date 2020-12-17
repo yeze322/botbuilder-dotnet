@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using AdaptiveExpressions.Properties;
 using Microsoft.Bot.Builder.Dialogs.Adaptive.Templates;
+using Microsoft.Bot.Builder.Telephony;
 using Microsoft.Bot.Schema;
 using Newtonsoft.Json;
 
@@ -98,6 +99,8 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Actions
                 { "result", activity == null ? string.Empty : JsonConvert.SerializeObject(activity, new JsonSerializerSettings() { NullValueHandling = NullValueHandling.Ignore }) },
             };
             TelemetryClient.TrackEvent("GeneratorResult", properties);
+
+            //var recordingResult = await dc.Context.StartRecordingAsync(cancellationToken).ConfigureAwait(false);
 
             ResourceResponse response = null;
             if (activity.Type != "message" 

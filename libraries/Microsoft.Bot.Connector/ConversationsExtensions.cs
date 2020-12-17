@@ -460,5 +460,46 @@ namespace Microsoft.Bot.Connector
             }
         }
 
+        /// <summary>
+        /// ReplyToActivity
+        /// </summary>
+        /// <remarks>
+        /// This method allows you to reply to an activity.
+        ///
+        /// This is slightly different from SendToConversation().
+        /// * SendToConversation(conversationId) - will append the activity to the end
+        /// of the conversation according to the timestamp or semantics of the channel.
+        /// * ReplyToActivity(conversationId,ActivityId) - adds the activity as a reply
+        /// to another activity, if the channel supports it. If the channel does not
+        /// support nested replies, ReplyToActivity falls back to SendToConversation.
+        ///
+        /// Use ReplyToActivity when replying to a specific activity in the
+        /// conversation.
+        ///
+        /// Use SendToConversation in all other cases.
+        /// </remarks>
+        /// <param name='operations'>
+        /// The operations group for this extension method.
+        /// </param>
+        /// <param name='conversationId'>
+        /// Conversation ID
+        /// </param>
+        /// <param name='activityId'>
+        /// activityId the reply is to (OPTIONAL)
+        /// </param>
+        /// <param name='activity'>
+        /// Activity to send
+        /// </param>
+        /// <param name='cancellationToken'>
+        /// The cancellation token.
+        /// </param>
+        public static async Task<T> ReplyToActivityAndGetResponseAsync<T>(this Conversations operations, string conversationId, string activityId, Activity activity, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            using (var _result = await operations.ReplyToActivityAndGetResponseWithHttpMessagesAsync<T>(conversationId, activityId, activity, null, cancellationToken).ConfigureAwait(false))
+            {
+                return _result.Body;
+            }
+        }
+
     }
 }
